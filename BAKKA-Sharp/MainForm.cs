@@ -921,6 +921,12 @@ namespace BAKKA_Sharp
         {
             if (currentSong != null)
             {
+                if (!chart.HasInitEvents)
+                {
+                    MessageBox.Show("Set Initial Chart Settings (from Chart Menu).", "Warning!");
+                    return;
+                }
+
                 currentSong.PlayPosition = (uint)songTrackBar.Value;
                 currentSong.Paused = !currentSong.Paused;
                 if (currentSong.Paused)
@@ -1258,6 +1264,7 @@ namespace BAKKA_Sharp
                     selectedGimmickIndex = 0;
                 UpdateGimmickLabels();
                 chart.Gimmicks = chart.Gimmicks.OrderBy(x => x.Measure).ToList();
+                chart.RecalcTime();
             }
         }
 

@@ -220,6 +220,16 @@ namespace BAKKA_Sharp
         public double MovieOffset { get; set; }
         String SongFileName { get; set; }
         List<Gimmick> TimeEvents { get; set; }
+        public bool HasInitEvents
+        {
+            get
+            {
+                return TimeEvents != null &&
+                    TimeEvents.Count > 0 &&
+                    Gimmicks.Count(x => x.Measure == 0 && x.GimmickType == GimmickType.BpmChange) >= 1 &&
+                    Gimmicks.Count(x => x.Measure == 0 && x.GimmickType == GimmickType.TimeSignatureChange) >= 1;
+            }
+        }
 
         public Chart()
         {
@@ -454,7 +464,7 @@ namespace BAKKA_Sharp
         /// <returns></returns>
         public BeatInfo GetBeat(float time)
         {
-            if (TimeEvents.Count == 0)
+            if (TimeEvents == null || TimeEvents.Count == 0)
                 return new BeatInfo(-1, 0);
 
             var evt = TimeEvents.Where(x => time >= x.StartTime).LastOrDefault();
@@ -470,7 +480,7 @@ namespace BAKKA_Sharp
         /// <returns></returns>
         public int GetTime(BeatInfo beat)
         {
-            if (TimeEvents.Count == 0)
+            if (TimeEvents == null || TimeEvents.Count == 0)
                 return 0;
 
             var evt = TimeEvents.Where(x => beat.Measure >= x.Measure).LastOrDefault();
