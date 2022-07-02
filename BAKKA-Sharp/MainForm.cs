@@ -22,6 +22,7 @@ namespace BAKKA_Sharp
         BonusType currentBonusType = BonusType.NoBonus;
         int selectedGimmickIndex = -1;
         int selectedNoteIndex = -1;
+        Note lastNote;
 
         // Mouse
         int mouseDownPos = -1;
@@ -544,7 +545,14 @@ namespace BAKKA_Sharp
 
                     // Draw bonus?
 
-                    // Draw highlight
+                    // Plot highlighted
+                    if (highlightViewedNoteToolStripMenuItem.Checked)
+                    {
+                        if (selectedNoteIndex != -1 && note == chart.Notes[selectedNoteIndex])
+                        {
+                            bufGraphics.Graphics.DrawArc(circleView.HighlightPen, info.Rect, info.StartAngle + 2, info.ArcLength - 4);
+                        }
+                    }
                 }
             }
 
@@ -735,7 +743,17 @@ namespace BAKKA_Sharp
 
         private void holdButton_Click(object sender, EventArgs e)
         {
-            SetSelectedObject(GimmickType.NoGimmick);
+            if (noBonusRadio.Checked)
+                SetSelectedObject(NoteType.HoldStartNoBonus);
+            else if (bonusRadio.Checked)
+            {
+                flairRadio.InvokeIfRequired(() => { flairRadio.Checked = true; });
+                SetSelectedObject(NoteType.HoldStartBonusFlair);
+            }
+            else if (flairRadio.Checked)
+                SetSelectedObject(NoteType.HoldStartBonusFlair);
+
+            currentGimmickType = GimmickType.NoGimmick;
         }
 
         private void endChartButton_Click(object sender, EventArgs e)
@@ -1103,12 +1121,17 @@ namespace BAKKA_Sharp
                 {
                     case NoteType.HoldStartNoBonus:
                     case NoteType.HoldStartBonusFlair:
-                        if (endHoldCheck.Checked)
-                            tempNote.NoteType = NoteType.HoldEnd;
+                        SetSelectedObject(NoteType.HoldMiddle);
+                        lastNote = tempNote;
                         break;
                     case NoteType.HoldMiddle:
-                        break;
                     case NoteType.HoldEnd:
+                        tempNote.PrevNote = lastNote;
+                        tempNote.PrevNote.NextNote = tempNote;
+                        if (endHoldCheck.Checked)
+                            tempNote.NoteType = NoteType.HoldEnd;
+                        else
+                            lastNote = tempNote;
                         break;
                     case NoteType.MaskAdd:
                     case NoteType.MaskRemove:
