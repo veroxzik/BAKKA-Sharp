@@ -198,7 +198,7 @@ namespace BAKKA_Sharp
                 case NoteType.HoldStartNoBonus:
                     updateLabel("Hold Start");
                     break;
-                case NoteType.HoldMiddle:
+                case NoteType.HoldJoint:
                     if (endHoldCheck.Checked)
                         updateLabel("Hold End");
                     else
@@ -543,7 +543,9 @@ namespace BAKKA_Sharp
                 {
                     bufGraphics.Graphics.DrawArc(circleView.GetPen(note), info.Rect, info.StartAngle, info.ArcLength);
 
-                    // Draw bonus?
+                    // Draw bonus
+                    if (note.IsFlair)
+                        bufGraphics.Graphics.DrawArc(circleView.HighlightPen, info.Rect, info.StartAngle + 2, info.ArcLength - 4);
 
                     // Plot highlighted
                     if (highlightViewedNoteToolStripMenuItem.Checked)
@@ -890,7 +892,7 @@ namespace BAKKA_Sharp
                             break;
                     }
                     break;
-                case NoteType.HoldMiddle:
+                case NoteType.HoldJoint:
                     break;
                 case NoteType.HoldEnd:
                     break;
@@ -972,11 +974,11 @@ namespace BAKKA_Sharp
         {
             songTrackBar.Value = (int)currentSong.PlayPosition;
             var info = chart.GetBeat(currentSong.PlayPosition);
-            if (info != null && info.Beat != -1)
+            if (info != null && info.Measure != -1)
             {
-                measureNumeric.Value = info.Beat;
-                beat1Numeric.Value = (int)((float)info.SubBeat / 1920.0f * (float)beat2Numeric.Value);
-                circleView.CurrentMeasure = info.Measure;
+                measureNumeric.Value = info.Measure;
+                beat1Numeric.Value = (int)((float)info.Beat / 1920.0f * (float)beat2Numeric.Value);
+                circleView.CurrentMeasure = info.MeasureDecimal;
 
                 // TODO Fix hi-speed (it needs to be able to display multiple hi-speeds in the circle view at once)
                 //// Change hi-speed, if applicable
@@ -996,12 +998,12 @@ namespace BAKKA_Sharp
 
             currentSong.PlayPosition = (uint)songTrackBar.Value;
             var info = chart.GetBeat(currentSong.PlayPosition);
-            if (info != null && info.Beat != -1 && valueTriggerEvent != EventSource.MouseWheel)
+            if (info != null && info.Measure != -1 && valueTriggerEvent != EventSource.MouseWheel)
             {
                 valueTriggerEvent = EventSource.TrackBar;
-                measureNumeric.Value = info.Beat;
-                beat1Numeric.Value = (int)((float)info.SubBeat / 1920.0f * (float)beat2Numeric.Value);
-                circleView.CurrentMeasure = info.Measure;
+                measureNumeric.Value = info.Measure;
+                beat1Numeric.Value = (int)((float)info.Beat / 1920.0f * (float)beat2Numeric.Value);
+                circleView.CurrentMeasure = info.MeasureDecimal;
             }
             circlePanel.Invalidate();
             valueTriggerEvent = EventSource.None;
@@ -1121,10 +1123,10 @@ namespace BAKKA_Sharp
                 {
                     case NoteType.HoldStartNoBonus:
                     case NoteType.HoldStartBonusFlair:
-                        SetSelectedObject(NoteType.HoldMiddle);
+                        SetSelectedObject(NoteType.HoldJoint);
                         lastNote = tempNote;
                         break;
-                    case NoteType.HoldMiddle:
+                    case NoteType.HoldJoint:
                     case NoteType.HoldEnd:
                         tempNote.PrevNote = lastNote;
                         tempNote.PrevNote.NextNote = tempNote;
@@ -1151,6 +1153,7 @@ namespace BAKKA_Sharp
                 if (selectedNoteIndex == -1)
                     selectedNoteIndex = 0;
                 UpdateNoteLabels();
+                circlePanel.Invalidate();
             }
         }
 
@@ -1447,8 +1450,8 @@ namespace BAKKA_Sharp
 
             var gimmick = chart.Gimmicks[selectedGimmickIndex];
 
-            gimmickMeasureLabel.Text = gimmick.BeatInfo.Beat.ToString();
-            var quant = Utils.GetQuantization(gimmick.BeatInfo.SubBeat, 16);
+            gimmickMeasureLabel.Text = gimmick.BeatInfo.Measure.ToString();
+            var quant = Utils.GetQuantization(gimmick.BeatInfo.Beat, 16);
             gimmickBeatLabel.Text = $"{quant.Item1} / {quant.Item2}";
             gimmickTypeLabel.Text = gimmick.GimmickType.ToLabel();
             switch (gimmick.GimmickType)
@@ -1502,8 +1505,8 @@ namespace BAKKA_Sharp
 
             var note = chart.Notes[selectedNoteIndex];
 
-            noteMeasureLabel.Text = note.BeatInfo.Beat.ToString();
-            var quant = Utils.GetQuantization(note.BeatInfo.SubBeat, 16);
+            noteMeasureLabel.Text = note.BeatInfo.Measure.ToString();
+            var quant = Utils.GetQuantization(note.BeatInfo.Beat, 16);
             noteBeatLabel.Text = $"{quant.Item1} / {quant.Item2}";
             noteTypeLabel.Text = note.NoteType.ToLabel();
             notePositionLabel.Text = note.Position.ToString();
@@ -1562,15 +1565,15 @@ namespace BAKKA_Sharp
             if (chart.Notes.Count == 0)
                 return;
 
-            int lastMeasure = chart.Notes[selectedNoteIndex].BeatInfo.Beat;
-            var note = chart.Notes.LastOrDefault(x => x.BeatInfo.Beat < lastMeasure);
+            int lastMeasure = chart.Notes[selectedNoteIndex].BeatInfo.Measure;
+            var note = chart.Notes.LastOrDefault(x => x.BeatInfo.Measure < lastMeasure);
             if (note != null)
             {
                 selectedNoteIndex = chart.Notes.IndexOf(note);
             }
             else
             {
-                note = chart.Notes.LastOrDefault(x => x.BeatInfo.Beat > lastMeasure);
+                note = chart.Notes.LastOrDefault(x => x.BeatInfo.Measure > lastMeasure);
                 if (note != null)
                 {
                     selectedNoteIndex = chart.Notes.IndexOf(note);
@@ -1585,15 +1588,15 @@ namespace BAKKA_Sharp
             if (chart.Notes.Count == 0)
                 return;
 
-            int lastMeasure = chart.Notes[selectedNoteIndex].BeatInfo.Beat;
-            var note = chart.Notes.FirstOrDefault(x => x.BeatInfo.Beat > lastMeasure);
+            int lastMeasure = chart.Notes[selectedNoteIndex].BeatInfo.Measure;
+            var note = chart.Notes.FirstOrDefault(x => x.BeatInfo.Measure > lastMeasure);
             if (note != null)
             {
                 selectedNoteIndex = chart.Notes.IndexOf(note);
             }
             else
             {
-                note = chart.Notes.FirstOrDefault(x => x.BeatInfo.Beat < lastMeasure);
+                note = chart.Notes.FirstOrDefault(x => x.BeatInfo.Measure < lastMeasure);
                 if (note != null)
                 {
                     selectedNoteIndex = chart.Notes.IndexOf(note);
@@ -1626,6 +1629,56 @@ namespace BAKKA_Sharp
 
             circlePanel.Invalidate();
             UpdateNoteLabels();
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            var sender = this;
+            var e = new EventArgs();
+
+            switch (keyData)
+            {
+                case Keys.T:
+                    tapButton_Click(sender, e);
+                    tapButton.Focus();
+                    return true;
+                case Keys.O:
+                    orangeButton_Click(sender, e);
+                    orangeButton.Focus();
+                    return true;
+                case Keys.G:
+                    greenButton_Click(sender, e);
+                    greenButton.Focus();
+                    return true;
+                case Keys.R:
+                    redButton_Click(sender, e);
+                    redButton.Focus();
+                    return true;
+                case Keys.B:
+                    blueButton_Click(sender, e);
+                    blueButton.Focus();
+                    return true;
+                case Keys.Y:
+                    chainButton_Click(sender, e);
+                    chainButton.Focus();
+                    return true;
+                case Keys.H:
+                    holdButton_Click(sender, e);
+                    holdButton.Focus();
+                    return true;
+                case Keys.I:
+                    insertButton_Click(sender, e);
+                    insertButton.Focus();
+                    return true;
+                case Keys.P:
+                    playButton_Click(sender, e);
+                    playButton.Focus();
+                    return true;
+                default:
+                    break;
+            }
+
+            return base.ProcessCmdKey(ref msg, keyData);
         }
     }
 }

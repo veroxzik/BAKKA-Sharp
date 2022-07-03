@@ -8,28 +8,28 @@ namespace BAKKA_Sharp
 {
     internal class BeatInfo
     {
+        public int Measure;
         public int Beat;
-        public int SubBeat;
 
-        public BeatInfo(int beat, int subBeat)
+        public BeatInfo(int measure, int beat)
         {
+            Measure = measure;
             Beat = beat;
-            SubBeat = subBeat;
         }
 
         public BeatInfo(float measure)
         {
-            Beat = (int)Math.Floor(measure);
-            SubBeat = (int)((measure - (float)Beat) * 1920.0f);
+            Measure = (int)Math.Floor(measure);
+            Beat = (int)((measure - (float)Measure) * 1920.0f);
         }
 
         public BeatInfo(BeatInfo info)
         {
+            Measure = info.Measure;
             Beat = info.Beat;
-            SubBeat = info.SubBeat;
         }
 
-        public float Measure { get { return (float)Beat + (float)SubBeat / 1920.0f; } }
+        public float MeasureDecimal { get { return (float)Measure + (float)Beat / 1920.0f; } }
     }
 
     internal class TimeSignature
@@ -57,7 +57,7 @@ namespace BAKKA_Sharp
         public BeatInfo BeatInfo { get; set; } = new BeatInfo(-1, 0);
         public GimmickType GimmickType { get; set; } = GimmickType.NoGimmick;
 
-        public float Measure { get { return BeatInfo.Measure; } }
+        public float Measure { get { return BeatInfo.MeasureDecimal; } }
     }
 
     internal class Note : NoteBase
@@ -82,7 +82,7 @@ namespace BAKKA_Sharp
                 switch (NoteType)
                 {
                     case NoteType.HoldStartNoBonus:
-                    case NoteType.HoldMiddle:
+                    case NoteType.HoldJoint:
                     case NoteType.HoldEnd:
                     case NoteType.HoldStartBonusFlair:
                         return true;
@@ -300,7 +300,7 @@ namespace BAKKA_Sharp
                             noteTemp.MaskFill = (MaskType)Convert.ToInt32(parsed[8]);
                         }
                         else if (noteTemp.NoteType == NoteType.HoldStartNoBonus ||
-                            noteTemp.NoteType == NoteType.HoldMiddle ||
+                            noteTemp.NoteType == NoteType.HoldJoint ||
                             noteTemp.NoteType == NoteType.HoldStartBonusFlair)
                         {
                             refByLine[lineNum] = Convert.ToInt32(parsed[8]);
@@ -367,7 +367,7 @@ namespace BAKKA_Sharp
 
                 foreach (var gimmick in Gimmicks)
                 {
-                    sw.Write($"{gimmick.BeatInfo.Beat,4:F0}{gimmick.BeatInfo.SubBeat,5:F0}{((int)gimmick.GimmickType),5:F0}");
+                    sw.Write($"{gimmick.BeatInfo.Measure,4:F0}{gimmick.BeatInfo.Beat,5:F0}{((int)gimmick.GimmickType),5:F0}");
                     switch (gimmick.GimmickType)
                     {
                         case GimmickType.BpmChange:
@@ -387,7 +387,7 @@ namespace BAKKA_Sharp
 
                 foreach (var note in Notes)
                 {
-                    sw.Write($"{note.BeatInfo.Beat,4:F0}{note.BeatInfo.SubBeat,5:F0}{((int)note.GimmickType),5:F0}{(int)note.NoteType,5:F0}");
+                    sw.Write($"{note.BeatInfo.Measure,4:F0}{note.BeatInfo.Beat,5:F0}{((int)note.GimmickType),5:F0}{(int)note.NoteType,5:F0}");
                     sw.Write($"{Notes.IndexOf(note),5:F0}{note.Position,5:F0}{note.Size,5:F0}{Convert.ToInt32(note.HoldChange),5:F0}");
                     if (note.IsMask)
                         sw.Write($"{(int)note.MaskFill,5:F0}");
@@ -411,7 +411,7 @@ namespace BAKKA_Sharp
             TimeEvents = new();
             for (int i = 0; i < Gimmicks.Count; i++)
             {
-                var evt = TimeEvents.FirstOrDefault(x => x.BeatInfo.Measure == Gimmicks[i].BeatInfo.Measure);
+                var evt = TimeEvents.FirstOrDefault(x => x.BeatInfo.MeasureDecimal == Gimmicks[i].BeatInfo.MeasureDecimal);
 
                 if (Gimmicks[i].GimmickType == GimmickType.BpmChange)
                 {
@@ -483,10 +483,10 @@ namespace BAKKA_Sharp
             if (TimeEvents == null || TimeEvents.Count == 0)
                 return 0;
 
-            var evt = TimeEvents.Where(x => beat.Measure >= x.Measure).LastOrDefault();
+            var evt = TimeEvents.Where(x => beat.MeasureDecimal >= x.Measure).LastOrDefault();
             if (evt == null)
                 evt = TimeEvents[0];
-            return (int)((60000.0 * 4.0 * evt.TimeSig.Ratio / evt.BPM) * (beat.Measure - evt.Measure) + evt.StartTime);
+            return (int)((60000.0 * 4.0 * evt.TimeSig.Ratio / evt.BPM) * (beat.MeasureDecimal - evt.Measure) + evt.StartTime);
         }
     }
 }

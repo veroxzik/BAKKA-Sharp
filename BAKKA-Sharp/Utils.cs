@@ -46,7 +46,7 @@ namespace BAKKA_Sharp
                 case NoteType.SlideGreenBonusFlair:
                     return Color.LimeGreen;
                 case NoteType.HoldStartNoBonus:
-                case NoteType.HoldMiddle:
+                case NoteType.HoldJoint:
                 case NoteType.HoldEnd:
                 case NoteType.HoldStartBonusFlair:
                     return Color.Yellow;
@@ -104,7 +104,7 @@ namespace BAKKA_Sharp
                     return "Slide (G) [Bonus]";
                 case NoteType.HoldStartNoBonus:
                     return "Hold Start";
-                case NoteType.HoldMiddle:
+                case NoteType.HoldJoint:
                     return "Hold Middle";
                 case NoteType.HoldEnd:
                     return "Hold End";
