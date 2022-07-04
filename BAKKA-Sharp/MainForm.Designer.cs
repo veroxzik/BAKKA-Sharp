@@ -57,7 +57,7 @@
             this.greenButton = new System.Windows.Forms.Button();
             this.orangeButton = new System.Windows.Forms.Button();
             this.tapButton = new System.Windows.Forms.Button();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.gimmickTypeGroupBox = new System.Windows.Forms.GroupBox();
             this.removeMaskRadio = new System.Windows.Forms.RadioButton();
             this.reverseButton = new System.Windows.Forms.Button();
             this.addMaskRadio = new System.Windows.Forms.RadioButton();
@@ -72,7 +72,7 @@
             this.cClockwiseMaskRadio = new System.Windows.Forms.RadioButton();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.currentSelectionLabel = new System.Windows.Forms.Label();
-            this.groupBox8 = new System.Windows.Forms.GroupBox();
+            this.playbackGroupBox = new System.Windows.Forms.GroupBox();
             this.songFileLabel = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
             this.songTrackBar = new System.Windows.Forms.TrackBar();
@@ -98,6 +98,9 @@
             this.initialChartSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
+            this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.undoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.redoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.gimmickDeleteButton = new System.Windows.Forms.Button();
             this.gimmickEditButton = new System.Windows.Forms.Button();
@@ -111,7 +114,7 @@
             this.label5 = new System.Windows.Forms.Label();
             this.gimmickNextButton = new System.Windows.Forms.Button();
             this.gimmickPrevButton = new System.Windows.Forms.Button();
-            this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.noteViewGroupBox = new System.Windows.Forms.GroupBox();
             this.noteMaskLabel = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.noteSizeLabel = new System.Windows.Forms.Label();
@@ -139,16 +142,16 @@
             ((System.ComponentModel.ISupportInitialize)(this.positionTrackBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.positionNumeric)).BeginInit();
             this.groupBox2.SuspendLayout();
-            this.groupBox3.SuspendLayout();
+            this.gimmickTypeGroupBox.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox5.SuspendLayout();
-            this.groupBox8.SuspendLayout();
+            this.playbackGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.songTrackBar)).BeginInit();
             this.groupBox9.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.visualHispeedNumeric)).BeginInit();
             this.menuStrip.SuspendLayout();
             this.groupBox6.SuspendLayout();
-            this.groupBox7.SuspendLayout();
+            this.noteViewGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // openFileDialog
@@ -164,6 +167,8 @@
             // 
             // circlePanel
             // 
+            this.circlePanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.circlePanel.Location = new System.Drawing.Point(257, 40);
             this.circlePanel.Name = "circlePanel";
             this.circlePanel.Size = new System.Drawing.Size(611, 611);
@@ -504,22 +509,22 @@
             this.tapButton.UseVisualStyleBackColor = false;
             this.tapButton.Click += new System.EventHandler(this.tapButton_Click);
             // 
-            // groupBox3
+            // gimmickTypeGroupBox
             // 
-            this.groupBox3.Controls.Add(this.removeMaskRadio);
-            this.groupBox3.Controls.Add(this.reverseButton);
-            this.groupBox3.Controls.Add(this.addMaskRadio);
-            this.groupBox3.Controls.Add(this.stopButton);
-            this.groupBox3.Controls.Add(this.hiSpeedButton);
-            this.groupBox3.Controls.Add(this.timeSigButton);
-            this.groupBox3.Controls.Add(this.bpmChangeButton);
-            this.groupBox3.Controls.Add(this.maskButton);
-            this.groupBox3.Location = new System.Drawing.Point(127, 30);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(124, 249);
-            this.groupBox3.TabIndex = 5;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Gimmick Types";
+            this.gimmickTypeGroupBox.Controls.Add(this.removeMaskRadio);
+            this.gimmickTypeGroupBox.Controls.Add(this.reverseButton);
+            this.gimmickTypeGroupBox.Controls.Add(this.addMaskRadio);
+            this.gimmickTypeGroupBox.Controls.Add(this.stopButton);
+            this.gimmickTypeGroupBox.Controls.Add(this.hiSpeedButton);
+            this.gimmickTypeGroupBox.Controls.Add(this.timeSigButton);
+            this.gimmickTypeGroupBox.Controls.Add(this.bpmChangeButton);
+            this.gimmickTypeGroupBox.Controls.Add(this.maskButton);
+            this.gimmickTypeGroupBox.Location = new System.Drawing.Point(127, 30);
+            this.gimmickTypeGroupBox.Name = "gimmickTypeGroupBox";
+            this.gimmickTypeGroupBox.Size = new System.Drawing.Size(124, 249);
+            this.gimmickTypeGroupBox.TabIndex = 5;
+            this.gimmickTypeGroupBox.TabStop = false;
+            this.gimmickTypeGroupBox.Text = "Gimmick Types";
             // 
             // removeMaskRadio
             // 
@@ -672,19 +677,21 @@
             this.currentSelectionLabel.TabIndex = 21;
             this.currentSelectionLabel.Text = "Touch";
             // 
-            // groupBox8
+            // playbackGroupBox
             // 
-            this.groupBox8.Controls.Add(this.songFileLabel);
-            this.groupBox8.Controls.Add(this.label20);
-            this.groupBox8.Controls.Add(this.songTrackBar);
-            this.groupBox8.Controls.Add(this.selectSongButton);
-            this.groupBox8.Controls.Add(this.playButton);
-            this.groupBox8.Location = new System.Drawing.Point(12, 657);
-            this.groupBox8.Name = "groupBox8";
-            this.groupBox8.Size = new System.Drawing.Size(736, 118);
-            this.groupBox8.TabIndex = 32;
-            this.groupBox8.TabStop = false;
-            this.groupBox8.Text = "Playback";
+            this.playbackGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.playbackGroupBox.Controls.Add(this.songFileLabel);
+            this.playbackGroupBox.Controls.Add(this.label20);
+            this.playbackGroupBox.Controls.Add(this.songTrackBar);
+            this.playbackGroupBox.Controls.Add(this.selectSongButton);
+            this.playbackGroupBox.Controls.Add(this.playButton);
+            this.playbackGroupBox.Location = new System.Drawing.Point(12, 657);
+            this.playbackGroupBox.Name = "playbackGroupBox";
+            this.playbackGroupBox.Size = new System.Drawing.Size(736, 118);
+            this.playbackGroupBox.TabIndex = 32;
+            this.playbackGroupBox.TabStop = false;
+            this.playbackGroupBox.Text = "Playback";
             // 
             // songFileLabel
             // 
@@ -746,6 +753,7 @@
             // 
             // groupBox9
             // 
+            this.groupBox9.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox9.Controls.Add(this.label21);
             this.groupBox9.Controls.Add(this.visualHispeedNumeric);
             this.groupBox9.Location = new System.Drawing.Point(754, 657);
@@ -921,6 +929,7 @@
             this.menuStrip.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
+            this.editToolStripMenuItem,
             this.viewToolStripMenuItem,
             this.chartToolStripMenuItem,
             this.aboutToolStripMenuItem});
@@ -930,8 +939,34 @@
             this.menuStrip.TabIndex = 0;
             this.menuStrip.Text = "menuStrip1";
             // 
+            // editToolStripMenuItem
+            // 
+            this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.undoToolStripMenuItem,
+            this.redoToolStripMenuItem});
+            this.editToolStripMenuItem.Name = "editToolStripMenuItem";
+            this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
+            this.editToolStripMenuItem.Text = "Edit";
+            // 
+            // undoToolStripMenuItem
+            // 
+            this.undoToolStripMenuItem.Name = "undoToolStripMenuItem";
+            this.undoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
+            this.undoToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.undoToolStripMenuItem.Text = "Undo";
+            this.undoToolStripMenuItem.Click += new System.EventHandler(this.undoToolStripMenuItem_Click);
+            // 
+            // redoToolStripMenuItem
+            // 
+            this.redoToolStripMenuItem.Name = "redoToolStripMenuItem";
+            this.redoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
+            this.redoToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.redoToolStripMenuItem.Text = "Redo";
+            this.redoToolStripMenuItem.Click += new System.EventHandler(this.redoToolStripMenuItem_Click);
+            // 
             // groupBox6
             // 
+            this.groupBox6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox6.Controls.Add(this.gimmickDeleteButton);
             this.groupBox6.Controls.Add(this.gimmickEditButton);
             this.groupBox6.Controls.Add(this.gimmickBeatLabel);
@@ -1068,32 +1103,33 @@
             this.gimmickPrevButton.UseVisualStyleBackColor = true;
             this.gimmickPrevButton.Click += new System.EventHandler(this.gimmickPrevButton_Click);
             // 
-            // groupBox7
+            // noteViewGroupBox
             // 
-            this.groupBox7.Controls.Add(this.noteMaskLabel);
-            this.groupBox7.Controls.Add(this.label9);
-            this.groupBox7.Controls.Add(this.noteSizeLabel);
-            this.groupBox7.Controls.Add(this.label17);
-            this.groupBox7.Controls.Add(this.noteNextMeasureButton);
-            this.groupBox7.Controls.Add(this.notePrevMeasureButton);
-            this.groupBox7.Controls.Add(this.noteDeleteSelectedButton);
-            this.groupBox7.Controls.Add(this.noteEditSelectedButton);
-            this.groupBox7.Controls.Add(this.noteBeatLabel);
-            this.groupBox7.Controls.Add(this.notePositionLabel);
-            this.groupBox7.Controls.Add(this.noteTypeLabel);
-            this.groupBox7.Controls.Add(this.noteMeasureLabel);
-            this.groupBox7.Controls.Add(this.label13);
-            this.groupBox7.Controls.Add(this.label14);
-            this.groupBox7.Controls.Add(this.label15);
-            this.groupBox7.Controls.Add(this.label16);
-            this.groupBox7.Controls.Add(this.noteNextButton);
-            this.groupBox7.Controls.Add(this.notePrevButton);
-            this.groupBox7.Location = new System.Drawing.Point(874, 420);
-            this.groupBox7.Name = "groupBox7";
-            this.groupBox7.Size = new System.Drawing.Size(256, 207);
-            this.groupBox7.TabIndex = 34;
-            this.groupBox7.TabStop = false;
-            this.groupBox7.Text = "Note View";
+            this.noteViewGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.noteViewGroupBox.Controls.Add(this.noteMaskLabel);
+            this.noteViewGroupBox.Controls.Add(this.label9);
+            this.noteViewGroupBox.Controls.Add(this.noteSizeLabel);
+            this.noteViewGroupBox.Controls.Add(this.label17);
+            this.noteViewGroupBox.Controls.Add(this.noteNextMeasureButton);
+            this.noteViewGroupBox.Controls.Add(this.notePrevMeasureButton);
+            this.noteViewGroupBox.Controls.Add(this.noteDeleteSelectedButton);
+            this.noteViewGroupBox.Controls.Add(this.noteEditSelectedButton);
+            this.noteViewGroupBox.Controls.Add(this.noteBeatLabel);
+            this.noteViewGroupBox.Controls.Add(this.notePositionLabel);
+            this.noteViewGroupBox.Controls.Add(this.noteTypeLabel);
+            this.noteViewGroupBox.Controls.Add(this.noteMeasureLabel);
+            this.noteViewGroupBox.Controls.Add(this.label13);
+            this.noteViewGroupBox.Controls.Add(this.label14);
+            this.noteViewGroupBox.Controls.Add(this.label15);
+            this.noteViewGroupBox.Controls.Add(this.label16);
+            this.noteViewGroupBox.Controls.Add(this.noteNextButton);
+            this.noteViewGroupBox.Controls.Add(this.notePrevButton);
+            this.noteViewGroupBox.Location = new System.Drawing.Point(874, 420);
+            this.noteViewGroupBox.Name = "noteViewGroupBox";
+            this.noteViewGroupBox.Size = new System.Drawing.Size(256, 207);
+            this.noteViewGroupBox.TabIndex = 34;
+            this.noteViewGroupBox.TabStop = false;
+            this.noteViewGroupBox.Text = "Note View";
             // 
             // noteMaskLabel
             // 
@@ -1276,14 +1312,14 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlDark;
             this.ClientSize = new System.Drawing.Size(1142, 787);
-            this.Controls.Add(this.groupBox7);
+            this.Controls.Add(this.noteViewGroupBox);
             this.Controls.Add(this.groupBox6);
             this.Controls.Add(this.insertButton);
             this.Controls.Add(this.groupBox9);
-            this.Controls.Add(this.groupBox8);
+            this.Controls.Add(this.playbackGroupBox);
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox4);
-            this.Controls.Add(this.groupBox3);
+            this.Controls.Add(this.gimmickTypeGroupBox);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.circlePanel);
@@ -1292,6 +1328,7 @@
             this.MinimumSize = new System.Drawing.Size(1158, 826);
             this.Name = "MainForm";
             this.Text = "BAKKA Sharp - [New File]";
+            this.Resize += new System.EventHandler(this.MainForm_Resize);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.beat2Numeric)).EndInit();
@@ -1303,14 +1340,14 @@
             ((System.ComponentModel.ISupportInitialize)(this.positionNumeric)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
-            this.groupBox3.ResumeLayout(false);
-            this.groupBox3.PerformLayout();
+            this.gimmickTypeGroupBox.ResumeLayout(false);
+            this.gimmickTypeGroupBox.PerformLayout();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
             this.groupBox5.ResumeLayout(false);
             this.groupBox5.PerformLayout();
-            this.groupBox8.ResumeLayout(false);
-            this.groupBox8.PerformLayout();
+            this.playbackGroupBox.ResumeLayout(false);
+            this.playbackGroupBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.songTrackBar)).EndInit();
             this.groupBox9.ResumeLayout(false);
             this.groupBox9.PerformLayout();
@@ -1319,8 +1356,8 @@
             this.menuStrip.PerformLayout();
             this.groupBox6.ResumeLayout(false);
             this.groupBox6.PerformLayout();
-            this.groupBox7.ResumeLayout(false);
-            this.groupBox7.PerformLayout();
+            this.noteViewGroupBox.ResumeLayout(false);
+            this.noteViewGroupBox.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1355,7 +1392,7 @@
         private Button greenButton;
         private Button orangeButton;
         private Button tapButton;
-        private GroupBox groupBox3;
+        private GroupBox gimmickTypeGroupBox;
         private RadioButton removeMaskRadio;
         private Button reverseButton;
         private RadioButton addMaskRadio;
@@ -1370,7 +1407,7 @@
         private RadioButton cClockwiseMaskRadio;
         private GroupBox groupBox5;
         private Label currentSelectionLabel;
-        private GroupBox groupBox8;
+        private GroupBox playbackGroupBox;
         private Label songFileLabel;
         private Label label20;
         private TrackBar songTrackBar;
@@ -1409,7 +1446,7 @@
         private Label label5;
         private Button gimmickNextButton;
         private Button gimmickPrevButton;
-        private GroupBox groupBox7;
+        private GroupBox noteViewGroupBox;
         private Label noteMaskLabel;
         private Label label9;
         private Label noteSizeLabel;
@@ -1428,5 +1465,8 @@
         private Label label16;
         private Button noteNextButton;
         private Button notePrevButton;
+        private ToolStripMenuItem editToolStripMenuItem;
+        private ToolStripMenuItem undoToolStripMenuItem;
+        private ToolStripMenuItem redoToolStripMenuItem;
     }
 }

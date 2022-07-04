@@ -6,206 +6,6 @@ using System.Threading.Tasks;
 
 namespace BAKKA_Sharp
 {
-    internal class BeatInfo
-    {
-        public int Measure;
-        public int Beat;
-
-        public BeatInfo(int measure, int beat)
-        {
-            Measure = measure;
-            Beat = beat;
-        }
-
-        public BeatInfo(float measure)
-        {
-            Measure = (int)Math.Floor(measure);
-            Beat = (int)((measure - (float)Measure) * 1920.0f);
-        }
-
-        public BeatInfo(BeatInfo info)
-        {
-            Measure = info.Measure;
-            Beat = info.Beat;
-        }
-
-        public float MeasureDecimal { get { return (float)Measure + (float)Beat / 1920.0f; } }
-    }
-
-    internal class TimeSignature
-    {
-        public int Upper;
-        public int Lower;
-
-        public double Ratio { get { return (double)Upper / (double)Lower; } }
-
-        public TimeSignature()
-        {
-            Upper = 4;
-            Lower = 4;
-        }
-
-        public TimeSignature(TimeSignature sig)
-        {
-            Upper = sig.Upper;
-            Lower = sig.Lower;
-        }
-    }
-
-    internal class NoteBase
-    {
-        public BeatInfo BeatInfo { get; set; } = new BeatInfo(-1, 0);
-        public GimmickType GimmickType { get; set; } = GimmickType.NoGimmick;
-
-        public float Measure { get { return BeatInfo.MeasureDecimal; } }
-    }
-
-    internal class Note : NoteBase
-    {
-        public NoteType NoteType { get; set; } = NoteType.TouchNoBonus;
-        public int Position { get; set; }
-        public int Size { get; set; }
-        [System.ComponentModel.Browsable(false)]
-        public bool HoldChange { get; set; }
-        [System.ComponentModel.Browsable(false)]
-        public MaskType MaskFill { get; set; }
-        [System.ComponentModel.Browsable(false)]
-        public Note NextNote { get; set; }
-        [System.ComponentModel.Browsable(false)]
-        public Note PrevNote { get; set; }
-
-        [System.ComponentModel.Browsable(false)]
-        public bool IsHold
-        {
-            get
-            {
-                switch (NoteType)
-                {
-                    case NoteType.HoldStartNoBonus:
-                    case NoteType.HoldJoint:
-                    case NoteType.HoldEnd:
-                    case NoteType.HoldStartBonusFlair:
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-        }
-        [System.ComponentModel.Browsable(false)]
-        public bool IsMask
-        {
-            get
-            {
-                switch (NoteType)
-                {
-                    case NoteType.MaskAdd:
-                    case NoteType.MaskRemove:
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-        }
-        [System.ComponentModel.Browsable(false)]
-        public bool IsBonus
-        {
-            get
-            {
-                switch (NoteType)
-                {
-                    case NoteType.TouchBonus:
-                    case NoteType.SlideOrangeBonus:
-                    case NoteType.SlideGreenBonus:
-                        return true;
-                    default:
-                        return false; ;
-                }
-            }
-        }
-        [System.ComponentModel.Browsable(false)]
-        public bool IsFlair
-        {
-            get
-            {
-                switch (NoteType)
-                {
-                    case NoteType.TouchBonusFlair:
-                    case NoteType.SnapRedBonusFlair:
-                    case NoteType.SnapBlueBonusFlair:
-                    case NoteType.SlideOrangeBonusFlair:
-                    case NoteType.SlideGreenBonusFlair:
-                    case NoteType.HoldStartBonusFlair:
-                    case NoteType.ChainBonusFlair:
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-        }
-        [System.ComponentModel.Browsable(false)]
-        public Color Color
-        {
-            get
-            {
-                return Utils.NoteTypeToColor(NoteType);
-            }
-        }
-
-        public Note() { }
-
-        public Note(NoteBase baseNote)
-        {
-            BeatInfo = baseNote.BeatInfo;
-            GimmickType = baseNote.GimmickType;
-        }
-    }
-
-    internal class Gimmick : NoteBase
-    {   
-        public double BPM { get; set; }
-        public TimeSignature TimeSig { get; set; } = new();
-        public double HiSpeed { get; set; }
-        public double StartTime { get; set; }
-
-        public bool IsReverse
-        {
-            get
-            {
-                switch (GimmickType)
-                {
-                    case GimmickType.ReverseStart:
-                    case GimmickType.ReverseMiddle:
-                    case GimmickType.ReverseEnd:
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-        }
-
-        public bool IsStop
-        {
-            get
-            {
-                switch (GimmickType)
-                {
-                    case GimmickType.StopStart:
-                    case GimmickType.StopEnd:
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-        }
-
-        public Gimmick() { }
-        public Gimmick(NoteBase baseNote)
-        {
-            BeatInfo = baseNote.BeatInfo;
-            GimmickType = baseNote.GimmickType;
-        }
-    }
-
     internal class Chart
     {
         public List<Note> Notes { get; set; }
@@ -230,11 +30,12 @@ namespace BAKKA_Sharp
                     Gimmicks.Count(x => x.Measure == 0 && x.GimmickType == GimmickType.TimeSignatureChange) >= 1;
             }
         }
+        public bool IsSaved { get; set; } = true;
 
         public Chart()
         {
-            Notes = new List<Note>();
-            Gimmicks = new List<Gimmick>();
+            Notes = new();
+            Gimmicks = new();
             Offset = 0;
             MovieOffset = 0;
             SongFileName = "";
@@ -271,9 +72,6 @@ namespace BAKKA_Sharp
 
             } while(++index < file.Length);
 
-            double beat;
-            double subbeat;
-            int type;
             int lineNum;
             Gimmick gimmickTemp;
             Note noteTemp;
@@ -347,6 +145,7 @@ namespace BAKKA_Sharp
 
             RecalcTime();
 
+            IsSaved = true;
             return true;
         }
 
@@ -397,12 +196,13 @@ namespace BAKKA_Sharp
                 }
             }
 
+            IsSaved = true;
             return true;
         }
 
         public void RecalcTime()
         {
-            Gimmicks.Sort((x, y) => x.Measure.CompareTo(y.Measure));
+            Gimmicks = Gimmicks.OrderBy(x => x.Measure).ToList();
             var timeSig = Gimmicks.FirstOrDefault(x => x.GimmickType == GimmickType.TimeSignatureChange && x.Measure == 0.0f);
             var bpm = Gimmicks.FirstOrDefault(x => x.GimmickType == GimmickType.BpmChange && x.Measure == 0.0f);
             if (timeSig == null || bpm == null)

@@ -1,6 +1,7 @@
 using System.Drawing.Drawing2D;
 using System.Reflection;
 using IrrKlang;
+using BAKKA_Sharp.Operations;
 
 namespace BAKKA_Sharp
 {
@@ -10,6 +11,9 @@ namespace BAKKA_Sharp
         Chart chart = new();
         string songFilePath = "";
         bool isNewFile = true;
+
+        // Operations
+        OperationManager opManager = new OperationManager();
 
         // Graphics
         BufferedGraphicsContext gfxContext;
@@ -26,6 +30,7 @@ namespace BAKKA_Sharp
 
         // Mouse
         int mouseDownPos = -1;
+        Point mouseDownPt;
         int lastMousePos = -1;
         bool rolloverPos = false;
         bool rolloverNeg = false;
@@ -72,20 +77,39 @@ namespace BAKKA_Sharp
             gimmickForm = new GimmickForm();
             initSettingsForm = new InitChartSettingsForm();
 
+            // Operation Manager
+            opManager.OperationHistoryChanged += (s, e) =>
+            {
+                chart.Notes = chart.Notes.OrderBy(x => x.Measure).ToList();
+                chart.Gimmicks = chart.Gimmicks.OrderBy(x => x.Measure).ToList();
+                if (selectedNoteIndex >= chart.Notes.Count)
+                    selectedNoteIndex = chart.Notes.Count - 1;
+                else if (selectedNoteIndex == -1 && chart.Notes.Count > 0)
+                    selectedNoteIndex = 0;
+                UpdateNoteLabels();
+                if (selectedGimmickIndex >= chart.Gimmicks.Count)
+                    selectedGimmickIndex = chart.Gimmicks.Count - 1;
+                else if (selectedGimmickIndex == -1 && chart.Gimmicks.Count > 0)
+                    selectedGimmickIndex = 0;
+                UpdateGimmickLabels();
+                SetText();
+                circlePanel.Invalidate();
+            };
+
             // Program info
             var asm = Assembly.GetExecutingAssembly();
             var fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(asm.Location);
             if (fvi.FileVersion != null)
             {
                 fileVersion = fvi.FileVersion;
-                SetText(false, "New File");
+                SetText();
             }
         }
 
-        private void SetText(bool unsaved, string filename = "")
+        private void SetText()
         {
-            string save = unsaved ? "*" : "";
-            string name = filename != "" ? filename : saveFileDialog.FileName;
+            string save = chart.IsSaved ? "" : "*";
+            string name = isNewFile ? "New File" : saveFileDialog.FileName;
             Text = $"{save}BAKKA Sharp {fileVersion} - [{name}]";
         }
 
@@ -98,11 +122,28 @@ namespace BAKKA_Sharp
 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            var result = MessageBox.Show("Current chart is unsaved. Do you wish to save your changes?", "Save Changes", MessageBoxButtons.YesNoCancel);
+
+            switch (result)
+            {
+                case DialogResult.Cancel:
+                    return;
+                case DialogResult.Yes:
+                    if (SaveFile() == DialogResult.Cancel)
+                        return;
+                    break;
+                case DialogResult.No:
+                    break;
+                default:
+                    break;
+            }
+
             chart = new();
             isNewFile = true;
             UpdateNoteLabels(-1);
             UpdateGimmickLabels(-1);
-            SetText(true, "New File");
+            SetText();
+            opManager.Clear();
             circlePanel.Invalidate();
         }
 
@@ -135,13 +176,19 @@ namespace BAKKA_Sharp
                 UpdateNoteLabels(0);
                 UpdateGimmickLabels(0);
                 saveFileDialog.FileName = openFileDialog.FileName;
-                SetText(false);
+                chart.IsSaved = true;
                 isNewFile = false;
+                SetText();
             }
             circlePanel.Invalidate();
         }
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFile();
+        }
+
+        private DialogResult SaveFile()
         {
             var result = !isNewFile ? DialogResult.OK : saveFileDialog.ShowDialog();
 
@@ -149,8 +196,9 @@ namespace BAKKA_Sharp
             {
                 chart.WriteFile(saveFileDialog.FileName);
                 isNewFile = false;
-                SetText(false);
+                SetText();
             }
+            return result;
         }
 
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -159,6 +207,7 @@ namespace BAKKA_Sharp
                 return;
 
             chart.WriteFile(saveFileDialog.FileName);
+            SetText();
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1023,6 +1072,7 @@ namespace BAKKA_Sharp
             {
                 positionNumeric.Value = (int)(theta / 6.0f);
                 mouseDownPos = (int)positionNumeric.Value;
+                mouseDownPt = e.Location;
                 lastMousePos = -1;
                 rolloverPos = false;
                 rolloverNeg = false;
@@ -1034,8 +1084,11 @@ namespace BAKKA_Sharp
         {
             if (e.Button == MouseButtons.Left && mouseDownPos > -1)
             {
+                var dist = Utils.GetDist(e.Location, mouseDownPt);
+                if (dist > 5.0f)
+                    InsertObject();
                 mouseDownPos = -1;
-                InsertObject();
+                mouseDownPt = new Point();
                 circlePanel.Invalidate();
             }
         }
@@ -1148,12 +1201,8 @@ namespace BAKKA_Sharp
                         break;
                 }
                 chart.Notes.Add(tempNote);
-                chart.Notes = chart.Notes.OrderBy(x => x.Measure).ToList();
-                SetText(true);
-                if (selectedNoteIndex == -1)
-                    selectedNoteIndex = 0;
-                UpdateNoteLabels();
-                circlePanel.Invalidate();
+                chart.IsSaved = false;
+                opManager.Push(new InsertNote(chart, tempNote));
             }
         }
 
@@ -1238,9 +1287,14 @@ namespace BAKKA_Sharp
 
         private void InsertGimmick(List<Gimmick> gimmicks)
         {
-            chart.Gimmicks.AddRange(gimmicks);
-            chart.Gimmicks = chart.Gimmicks.OrderBy(x => x.Measure).ToList();
-            SetText(true);
+            var operations = new List<InsertGimmick>();
+            foreach (var gim in gimmicks)
+            {
+                chart.Gimmicks.Add(gim);
+                operations.Add(new Operations.InsertGimmick(chart, gim));
+            }
+            chart.IsSaved = false;
+            opManager.Push(new CompositeOperation(operations[0].Description, operations));
         }
 
         private void maskRatio_CheckChanged(object sender, EventArgs e)
@@ -1406,30 +1460,36 @@ namespace BAKKA_Sharp
         {
             float measure = chart.Gimmicks[selectedGimmickIndex].Measure;
             var type = chart.Gimmicks[selectedGimmickIndex].GimmickType;
+            var gimmicks = new List<Gimmick>();
+            gimmicks.Add(chart.Gimmicks[selectedGimmickIndex]);
             chart.Gimmicks.RemoveAt(selectedGimmickIndex);
             switch (type)
             {
                 case GimmickType.ReverseStart:
-                    chart.Gimmicks.Remove(chart.Gimmicks.First(x => x.Measure > measure && x.GimmickType == GimmickType.ReverseMiddle));
-                    chart.Gimmicks.Remove(chart.Gimmicks.First(x => x.Measure > measure && x.GimmickType == GimmickType.ReverseEnd));
+                    gimmicks.Add(chart.Gimmicks.First(x => x.Measure > measure && x.GimmickType == GimmickType.ReverseMiddle));
+                    gimmicks.Add(chart.Gimmicks.First(x => x.Measure > measure && x.GimmickType == GimmickType.ReverseEnd));
                     break;
                 case GimmickType.ReverseMiddle:
-                    chart.Gimmicks.Remove(chart.Gimmicks.Last(x => x.Measure < measure && x.GimmickType == GimmickType.ReverseStart));
-                    chart.Gimmicks.Remove(chart.Gimmicks.First(x => x.Measure > measure && x.GimmickType == GimmickType.ReverseEnd));
+                    gimmicks.Add(chart.Gimmicks.Last(x => x.Measure < measure && x.GimmickType == GimmickType.ReverseStart));
+                    gimmicks.Add(chart.Gimmicks.First(x => x.Measure > measure && x.GimmickType == GimmickType.ReverseEnd));
                     break;
                 case GimmickType.ReverseEnd:
-                    chart.Gimmicks.Remove(chart.Gimmicks.Last(x => x.Measure < measure && x.GimmickType == GimmickType.ReverseStart));
-                    chart.Gimmicks.Remove(chart.Gimmicks.Last(x => x.Measure < measure && x.GimmickType == GimmickType.ReverseMiddle));
+                    gimmicks.Add(chart.Gimmicks.Last(x => x.Measure < measure && x.GimmickType == GimmickType.ReverseStart));
+                    gimmicks.Add(chart.Gimmicks.Last(x => x.Measure < measure && x.GimmickType == GimmickType.ReverseMiddle));
                     break;
                 case GimmickType.StopStart:
-                    chart.Gimmicks.Remove(chart.Gimmicks.First(x => x.Measure > measure && x.GimmickType == GimmickType.StopEnd));
+                    gimmicks.Add(chart.Gimmicks.First(x => x.Measure > measure && x.GimmickType == GimmickType.StopEnd));
                     break;
                 case GimmickType.StopEnd:
-                    chart.Gimmicks.Remove(chart.Gimmicks.Last(x => x.Measure < measure && x.GimmickType == GimmickType.StopStart));
+                    gimmicks.Add(chart.Gimmicks.Last(x => x.Measure < measure && x.GimmickType == GimmickType.StopStart));
                     break;
                 default:
                     break;
             }
+            var ops = new List<RemoveGimmick>();
+            foreach (var gim in gimmicks)
+                ops.Add(new RemoveGimmick(chart, gim));
+            opManager.InvokeAndPush(new CompositeOperation(ops[0].Description, ops));
             if (selectedGimmickIndex >= chart.Gimmicks.Count)
                 selectedGimmickIndex = chart.Gimmicks.Count - 1;
             UpdateGimmickLabels();
@@ -1437,7 +1497,7 @@ namespace BAKKA_Sharp
 
         private void UpdateGimmickLabels(int val = -2)
         {
-            if (val != -2)
+            if (val != -2 && val < chart.Gimmicks.Count)
                 selectedGimmickIndex = val;
             if (selectedGimmickIndex == -1)
             {
@@ -1636,6 +1696,8 @@ namespace BAKKA_Sharp
             var sender = this;
             var e = new EventArgs();
 
+            bool isCtrl = Keys.Modifiers == Keys.Control;
+
             switch (keyData)
             {
                 case Keys.T:
@@ -1679,6 +1741,39 @@ namespace BAKKA_Sharp
             }
 
             return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        private void undoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (opManager.CanUndo)
+                opManager.Undo();
+        }
+
+        private void redoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (opManager.CanRedo)
+                opManager.Redo();
+        }
+
+        private void MainForm_Resize(object sender, EventArgs e)
+        {
+            var zoneWidth = noteViewGroupBox.Left - gimmickTypeGroupBox.Right - 12;
+            var zoneHeight = playbackGroupBox.Top - gimmickTypeGroupBox.Top - 6;
+            if (zoneWidth > zoneHeight)
+            {
+                circlePanel.Width = zoneHeight;
+                circlePanel.Height = zoneHeight;
+            }
+            else
+            {
+                circlePanel.Width = zoneWidth;
+                circlePanel.Height = zoneWidth;
+            }
+            int paddingLeft = (zoneWidth - circlePanel.Width) / 2;
+            circlePanel.Left = gimmickTypeGroupBox.Right + 6 + paddingLeft;
+            SetBufferedGraphicsContext();
+            circleView.Update(circlePanel.Size);
+            circlePanel.Invalidate();
         }
     }
 }

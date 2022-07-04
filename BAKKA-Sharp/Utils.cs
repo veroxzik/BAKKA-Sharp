@@ -105,7 +105,7 @@ namespace BAKKA_Sharp
                 case NoteType.HoldStartNoBonus:
                     return "Hold Start";
                 case NoteType.HoldJoint:
-                    return "Hold Middle";
+                    return "Hold Joint";
                 case NoteType.HoldEnd:
                     return "Hold End";
                 case NoteType.MaskAdd:
@@ -172,6 +172,11 @@ namespace BAKKA_Sharp
                 min *= 2;
             }
             return new Tuple<int, int>((int)(val * min / 1920.0), min);
+        }
+
+        internal static float GetDist(Point a, Point b)
+        {
+            return (float)Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2));
         }
     }
 }
