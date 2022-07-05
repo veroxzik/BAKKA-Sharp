@@ -1328,6 +1328,7 @@
             this.MinimumSize = new System.Drawing.Size(1158, 826);
             this.Name = "MainForm";
             this.Text = "BAKKA Sharp - [New File]";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Resize += new System.EventHandler(this.MainForm_Resize);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();

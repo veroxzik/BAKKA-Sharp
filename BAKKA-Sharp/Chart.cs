@@ -87,7 +87,7 @@ namespace BAKKA_Sharp
                 switch (temp.GimmickType)
                 {
                     case GimmickType.NoGimmick:
-                        noteTemp = new Note(temp);
+                        noteTemp = new Note(temp.BeatInfo);
                         noteTemp.NoteType = (NoteType)Convert.ToInt32(parsed[3]);
                         lineNum = Convert.ToInt32(parsed[4]);
                         noteTemp.Position = Convert.ToInt32(parsed[5]);
@@ -107,17 +107,17 @@ namespace BAKKA_Sharp
                         notesByLine[lineNum] = Notes.Last();
                         break;
                     case GimmickType.BpmChange:
-                        gimmickTemp = new Gimmick(temp);
+                        gimmickTemp = new Gimmick(temp.BeatInfo, temp.GimmickType);
                         gimmickTemp.BPM = Convert.ToDouble(parsed[3]);
                         Gimmicks.Add(gimmickTemp);
                         break;
                     case GimmickType.TimeSignatureChange:
-                        gimmickTemp = new Gimmick(temp);
+                        gimmickTemp = new Gimmick(temp.BeatInfo, temp.GimmickType);
                         gimmickTemp.TimeSig = new TimeSignature() { Upper = Convert.ToInt32(parsed[3]), Lower = Convert.ToInt32(parsed[4]) };
                         Gimmicks.Add(gimmickTemp);
                         break;
                     case GimmickType.HiSpeedChange:
-                        gimmickTemp = new Gimmick(temp);
+                        gimmickTemp = new Gimmick(temp.BeatInfo, temp.GimmickType);
                         gimmickTemp.HiSpeed = Convert.ToDouble(parsed[3]);
                         Gimmicks.Add(gimmickTemp);
                         break;
@@ -127,7 +127,7 @@ namespace BAKKA_Sharp
                     case GimmickType.StopStart:
                     case GimmickType.StopEnd:
                     default:
-                        Gimmicks.Add(new Gimmick(temp));
+                        Gimmicks.Add(new Gimmick(temp.BeatInfo, temp.GimmickType));
                         break;
                 }
 

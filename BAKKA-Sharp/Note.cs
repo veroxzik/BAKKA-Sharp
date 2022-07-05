@@ -152,11 +152,17 @@ namespace BAKKA_Sharp
         }
 
         public Note() { }
-
-        public Note(NoteBase baseNote)
+        public Note(BeatInfo info)
         {
-            BeatInfo = baseNote.BeatInfo;
-            GimmickType = baseNote.GimmickType;
+            BeatInfo = info;
+            GimmickType = GimmickType.NoGimmick;
+        }
+
+        public Note(Note baseNote) : this(baseNote.BeatInfo)
+        {
+            Position = baseNote.Position;
+            Size = baseNote.Size;
+            NoteType = baseNote.NoteType;
         }
     }
 
@@ -199,10 +205,25 @@ namespace BAKKA_Sharp
         }
 
         public Gimmick() { }
-        public Gimmick(NoteBase baseNote)
+        public Gimmick(BeatInfo info, GimmickType type)
         {
-            BeatInfo = baseNote.BeatInfo;
-            GimmickType = baseNote.GimmickType;
+            BeatInfo = info;
+            GimmickType = type;
+        }
+        public Gimmick(Gimmick baseGimmick) : this(baseGimmick.BeatInfo, baseGimmick.GimmickType)
+        {
+            switch (GimmickType)
+            {
+                case GimmickType.BpmChange:
+                    HiSpeed = baseGimmick.HiSpeed;
+                    break;
+                case GimmickType.TimeSignatureChange:
+                    TimeSig = new TimeSignature(baseGimmick.TimeSig);
+                    break;
+                case GimmickType.HiSpeedChange:
+                    HiSpeed = baseGimmick.HiSpeed;
+                    break;
+            }
         }
     }
 }

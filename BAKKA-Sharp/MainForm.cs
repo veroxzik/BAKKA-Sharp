@@ -122,7 +122,9 @@ namespace BAKKA_Sharp
 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var result = MessageBox.Show("Current chart is unsaved. Do you wish to save your changes?", "Save Changes", MessageBoxButtons.YesNoCancel);
+            var result = chart.IsSaved 
+                ? DialogResult.No 
+                : MessageBox.Show("Current chart is unsaved. Do you wish to save your changes?", "Save Changes", MessageBoxButtons.YesNoCancel);
 
             switch (result)
             {
@@ -212,7 +214,50 @@ namespace BAKKA_Sharp
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            var result = chart.IsSaved
+                ? DialogResult.No
+                : MessageBox.Show("Current chart is unsaved. Do you wish to save your changes?", "Save Changes", MessageBoxButtons.YesNoCancel);
+
+            switch (result)
+            {
+                case DialogResult.Cancel:
+                    return;
+                case DialogResult.Yes:
+                    if (SaveFile() == DialogResult.Cancel)
+                        return;
+                    break;
+                case DialogResult.No:
+                    break;
+                default:
+                    break;
+            }
+
             Application.Exit();
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            var result = chart.IsSaved
+                ? DialogResult.No
+                : MessageBox.Show("Current chart is unsaved. Do you wish to save your changes?", "Save Changes", MessageBoxButtons.YesNoCancel);
+
+            switch (result)
+            {
+                case DialogResult.Cancel:
+                    e.Cancel = true;
+                    return;
+                case DialogResult.Yes:
+                    if (SaveFile() == DialogResult.Cancel)
+                    {
+                        e.Cancel = true;
+                        return;
+                    }
+                    break;
+                case DialogResult.No:
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void SetSelectedObject(NoteType type)
@@ -1417,40 +1462,42 @@ namespace BAKKA_Sharp
 
                 if (gimmickForm.Show(gimmick, GimmickForm.FormReason.Edit, gim1, gim2) == DialogResult.OK)
                 {
+                    var opList = new List<EditGimmick>();
+
                     switch (gimmick.GimmickType)
                     {
                         case GimmickType.BpmChange:
                         case GimmickType.TimeSignatureChange:
                         case GimmickType.HiSpeedChange:
-                            chart.Gimmicks[selectedGimmickIndex] = gimmickForm.Gimmicks[0];
+                            opList.Add(new EditGimmick(gimmick, gimmickForm.Gimmicks[0]));
                             break;
                         case GimmickType.ReverseStart:
-                            gimmick.BeatInfo = new BeatInfo(gimmickForm.Gimmicks[0].BeatInfo);
-                            gim1.BeatInfo = new BeatInfo(gimmickForm.Gimmicks[1].BeatInfo);
-                            gim2.BeatInfo = new BeatInfo(gimmickForm.Gimmicks[2].BeatInfo);
+                            opList.Add(new EditGimmick(gimmick, gimmickForm.Gimmicks[0]));
+                            opList.Add(new EditGimmick(gim1, gimmickForm.Gimmicks[1]));
+                            opList.Add(new EditGimmick(gim2, gimmickForm.Gimmicks[2]));
                             break;
                         case GimmickType.ReverseMiddle:
-                            gim1.BeatInfo = new BeatInfo(gimmickForm.Gimmicks[0].BeatInfo);
-                            gimmick.BeatInfo = new BeatInfo(gimmickForm.Gimmicks[1].BeatInfo);
-                            gim2.BeatInfo = new BeatInfo(gimmickForm.Gimmicks[2].BeatInfo);
+                            opList.Add(new EditGimmick(gim1, gimmickForm.Gimmicks[0]));
+                            opList.Add(new EditGimmick(gimmick, gimmickForm.Gimmicks[1]));
+                            opList.Add(new EditGimmick(gim2, gimmickForm.Gimmicks[2]));
                             break;
                         case GimmickType.ReverseEnd:
-                            gim1.BeatInfo = new BeatInfo(gimmickForm.Gimmicks[0].BeatInfo);
-                            gim2.BeatInfo = new BeatInfo(gimmickForm.Gimmicks[1].BeatInfo);
-                            gimmick.BeatInfo = new BeatInfo(gimmickForm.Gimmicks[2].BeatInfo);
+                            opList.Add(new EditGimmick(gim1, gimmickForm.Gimmicks[0]));
+                            opList.Add(new EditGimmick(gim2, gimmickForm.Gimmicks[1]));
+                            opList.Add(new EditGimmick(gimmick, gimmickForm.Gimmicks[2]));
                             break;
                         case GimmickType.StopStart:
-                            gimmick.BeatInfo = new BeatInfo(gimmickForm.Gimmicks[0].BeatInfo);
-                            gim1.BeatInfo = new BeatInfo(gimmickForm.Gimmicks[1].BeatInfo);
+                            opList.Add(new EditGimmick(gimmick, gimmickForm.Gimmicks[0]));
+                            opList.Add(new EditGimmick(gim1, gimmickForm.Gimmicks[1]));
                             break;
                         case GimmickType.StopEnd:
-                            gim1.BeatInfo = new BeatInfo(gimmickForm.Gimmicks[0].BeatInfo);
-                            gimmick.BeatInfo = new BeatInfo(gimmickForm.Gimmicks[1].BeatInfo);
+                            opList.Add(new EditGimmick(gim1, gimmickForm.Gimmicks[0]));
+                            opList.Add(new EditGimmick(gimmick, gimmickForm.Gimmicks[1]));
                             break;
                         default:
                             break;
                     }
-                    chart.Gimmicks = chart.Gimmicks.OrderBy(x => x.Measure).ToList();
+                    opManager.InvokeAndPush(new CompositeOperation(opList[0].Description, opList));
                     UpdateGimmickLabels();
                 }
             }
@@ -1458,6 +1505,9 @@ namespace BAKKA_Sharp
 
         private void gimmickDeleteButton_Click(object sender, EventArgs e)
         {
+            if (selectedGimmickIndex == -1)
+                return;
+
             float measure = chart.Gimmicks[selectedGimmickIndex].Measure;
             var type = chart.Gimmicks[selectedGimmickIndex].GimmickType;
             var gimmicks = new List<Gimmick>();
@@ -1671,9 +1721,14 @@ namespace BAKKA_Sharp
             if (selectedNoteIndex == -1)
                 return;
 
-            chart.Notes[selectedNoteIndex].Position = (int)positionNumeric.Value;
-            chart.Notes[selectedNoteIndex].Size = (int)sizeNumeric.Value;
-
+            var currentNote = chart.Notes[selectedNoteIndex];
+            var newNote = new Note()
+            {
+                BeatInfo = currentNote.BeatInfo,
+                Position = (int)positionNumeric.Value,
+                Size = (int)sizeNumeric.Value
+            };
+            opManager.InvokeAndPush(new EditNote(currentNote, newNote));
             circlePanel.Invalidate();
             UpdateNoteLabels();
         }
@@ -1684,19 +1739,18 @@ namespace BAKKA_Sharp
                 return;
 
             int delIndex = selectedNoteIndex;
-            chart.Notes.RemoveAt(selectedNoteIndex);
-            selectedNoteIndex = delIndex - 1;
-
-            circlePanel.Invalidate();
-            UpdateNoteLabels();
+            opManager.InvokeAndPush(new RemoveNote(chart, chart.Notes[selectedNoteIndex]));
+            if (selectedNoteIndex == delIndex)
+            {
+                UpdateNoteLabels(delIndex - 1);
+                circlePanel.Invalidate();
+            }
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             var sender = this;
             var e = new EventArgs();
-
-            bool isCtrl = Keys.Modifiers == Keys.Control;
 
             switch (keyData)
             {

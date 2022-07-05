@@ -58,4 +58,34 @@ namespace BAKKA_Sharp.Operations
             Chart.Notes.Add(Note);
         }
     }
+
+    internal class EditNote : IOperation
+    {
+        public string Description => "Edit note";
+
+        protected Note Base { get; }
+        protected Note OldNote { get; }
+        protected Note NewNote { get; }
+
+        public EditNote(Note baseNote, Note newNote)
+        {
+            Base = baseNote;
+            OldNote = new Note(baseNote);
+            NewNote = new Note(newNote);
+        }
+
+        public void Redo()
+        {
+            Base.BeatInfo = new BeatInfo(NewNote.BeatInfo);
+            Base.Position = NewNote.Position;
+            Base.Size = NewNote.Size;
+        }
+
+        public void Undo()
+        {
+            Base.BeatInfo = new BeatInfo(OldNote.BeatInfo);
+            Base.Position = OldNote.Position;
+            Base.Size = OldNote.Size;
+        }
+    }
 }
