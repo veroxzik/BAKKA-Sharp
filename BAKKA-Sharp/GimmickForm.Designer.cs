@@ -135,6 +135,7 @@
             this.revEnd2MeasureNumeric.Name = "revEnd2MeasureNumeric";
             this.revEnd2MeasureNumeric.Size = new System.Drawing.Size(87, 23);
             this.revEnd2MeasureNumeric.TabIndex = 36;
+            this.revEnd2MeasureNumeric.ValueChanged += new System.EventHandler(this.revEnd2MeasureNumeric_ValueChanged);
             // 
             // label19
             // 
@@ -205,6 +206,7 @@
             this.revEnd1MeasureNumeric.Name = "revEnd1MeasureNumeric";
             this.revEnd1MeasureNumeric.Size = new System.Drawing.Size(87, 23);
             this.revEnd1MeasureNumeric.TabIndex = 31;
+            this.revEnd1MeasureNumeric.ValueChanged += new System.EventHandler(this.revEnd1MeasureNumeric_ValueChanged);
             // 
             // label17
             // 
@@ -275,6 +277,7 @@
             this.stopEndMeasureNumeric.Name = "stopEndMeasureNumeric";
             this.stopEndMeasureNumeric.Size = new System.Drawing.Size(87, 23);
             this.stopEndMeasureNumeric.TabIndex = 11;
+            this.stopEndMeasureNumeric.ValueChanged += new System.EventHandler(this.stopEndMeasureNumeric_ValueChanged);
             // 
             // label11
             // 
@@ -477,6 +480,7 @@
             this.startMeasureNumeric.Name = "startMeasureNumeric";
             this.startMeasureNumeric.Size = new System.Drawing.Size(87, 23);
             this.startMeasureNumeric.TabIndex = 41;
+            this.startMeasureNumeric.ValueChanged += new System.EventHandler(this.startMeasureNumeric_ValueChanged);
             // 
             // label2
             // 

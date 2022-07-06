@@ -16,6 +16,12 @@ namespace BAKKA_Sharp
         public bool InsertGimmick { get; private set; }
         internal List<Gimmick> Gimmicks { get; private set; }
 
+        float StartMeasure { get { return (float)startMeasureNumeric.Value + (float)startBeat1Numeric.Value / (float)startBeat2Numeric.Value; } }
+        float StopEndMeasure { get { return (float)stopEndMeasureNumeric.Value + (float)stopEndBeat1Numeric.Value / (float)stopEndBeat2Numeric.Value; } }
+        float RevEnd1Measure { get { return (float)revEnd1MeasureNumeric.Value + (float)revEnd1Beat1Numeric.Value / (float)revEnd1Beat2Numeric.Value; } }
+        float RevEnd2Measure { get { return (float)revEnd2MeasureNumeric.Value + (float)revEnd2Beat1Numeric.Value / (float)revEnd2Beat2Numeric.Value; } }
+
+
         public enum FormReason
         {
             New,
@@ -227,6 +233,18 @@ namespace BAKKA_Sharp
             DialogResult = DialogResult.OK;
         }
 
+        private void startMeasureNumeric_ValueChanged(object sender, EventArgs e)
+        {
+            if (stopEndMeasureNumeric.Enabled && StopEndMeasure < StartMeasure)
+            {
+                stopEndMeasureNumeric.Value = startMeasureNumeric.Value + 1;
+            }
+            if (revEnd1MeasureNumeric.Enabled && RevEnd1Measure < StartMeasure)
+            {
+                revEnd1MeasureNumeric.Value = startMeasureNumeric.Value + 1;
+            }
+        }
+
         private void startBeat1Numeric_ValueChanged(object sender, EventArgs e)
         {
             if (startBeat1Numeric.Value >= startBeat2Numeric.Value)
@@ -248,8 +266,27 @@ namespace BAKKA_Sharp
             }
         }
 
+        private void stopEndMeasureNumeric_ValueChanged(object sender, EventArgs e)
+        {
+            if (StopEndMeasure < StartMeasure)
+            {
+                stopEndMeasureNumeric.Value = startMeasureNumeric.Value;
+                stopEndBeat1Numeric.Value = startBeat1Numeric.Value;
+                stopEndBeat2Numeric.Value = startBeat2Numeric.Value;
+                return;
+            }
+        }
+
         private void stopEndBeat1Numeric_ValueChanged(object sender, EventArgs e)
         {
+            if (StopEndMeasure < StartMeasure)
+            {
+                stopEndMeasureNumeric.Value = startMeasureNumeric.Value;
+                stopEndBeat1Numeric.Value = startBeat1Numeric.Value;
+                stopEndBeat2Numeric.Value = startBeat2Numeric.Value;
+                return;
+            }
+
             if (stopEndBeat1Numeric.Value >= stopEndBeat2Numeric.Value)
             {
                 stopEndMeasureNumeric.Value++;
@@ -269,8 +306,32 @@ namespace BAKKA_Sharp
             }
         }
 
+        private void revEnd1MeasureNumeric_ValueChanged(object sender, EventArgs e)
+        {
+            if (RevEnd1Measure < StartMeasure)
+            {
+                revEnd1MeasureNumeric.Value = startMeasureNumeric.Value;
+                revEnd1Beat1Numeric.Value = startBeat1Numeric.Value;
+                revEnd1Beat2Numeric.Value = startBeat2Numeric.Value;
+            }
+            if (RevEnd2Measure < RevEnd1Measure)
+            {
+                revEnd2MeasureNumeric.Value = revEnd1MeasureNumeric.Value;
+                revEnd2Beat1Numeric.Value = revEnd1Beat1Numeric.Value;
+                revEnd2Beat2Numeric.Value = revEnd1Beat2Numeric.Value;
+            }
+        }        
+
         private void revEnd1Beat1Numeric_ValueChanged(object sender, EventArgs e)
         {
+            if (RevEnd1Measure < StartMeasure)
+            {
+                revEnd1MeasureNumeric.Value = startMeasureNumeric.Value;
+                revEnd1Beat1Numeric.Value = startBeat1Numeric.Value;
+                revEnd1Beat2Numeric.Value = startBeat2Numeric.Value;
+                return;
+            }
+
             if (revEnd1Beat1Numeric.Value >= revEnd1Beat2Numeric.Value)
             {
                 revEnd1MeasureNumeric.Value++;
@@ -290,8 +351,27 @@ namespace BAKKA_Sharp
             }
         }
 
+        private void revEnd2MeasureNumeric_ValueChanged(object sender, EventArgs e)
+        {
+            if (RevEnd2Measure < RevEnd1Measure)
+            {
+                revEnd2MeasureNumeric.Value = revEnd1MeasureNumeric.Value;
+                revEnd2Beat1Numeric.Value = revEnd1Beat1Numeric.Value;
+                revEnd2Beat2Numeric.Value = revEnd1Beat2Numeric.Value;
+                return;
+            }
+        }
+
         private void revEnd2Beat1Numeric_ValueChanged(object sender, EventArgs e)
         {
+            if (RevEnd2Measure < RevEnd1Measure)
+            {
+                revEnd2MeasureNumeric.Value = revEnd1MeasureNumeric.Value;
+                revEnd2Beat1Numeric.Value = revEnd1Beat1Numeric.Value;
+                revEnd2Beat2Numeric.Value = revEnd1Beat2Numeric.Value;
+                return;
+            }
+
             if (revEnd2Beat1Numeric.Value >= revEnd2Beat2Numeric.Value)
             {
                 revEnd2MeasureNumeric.Value++;

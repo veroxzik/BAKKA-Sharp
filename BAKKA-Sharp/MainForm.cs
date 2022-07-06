@@ -120,25 +120,32 @@ namespace BAKKA_Sharp
                 new Rectangle(0, 0, circlePanel.Width, circlePanel.Height));
         }
 
-        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Prompts for a save if the chart is not currently saved.
+        /// </summary>
+        /// <returns>TRUE if the calling method should continue, or FALSE if the calling method should return</returns>
+        private bool PromptSave()
         {
-            var result = chart.IsSaved 
-                ? DialogResult.No 
+            var result = chart.IsSaved
+                ? DialogResult.No
                 : MessageBox.Show("Current chart is unsaved. Do you wish to save your changes?", "Save Changes", MessageBoxButtons.YesNoCancel);
 
             switch (result)
             {
                 case DialogResult.Cancel:
-                    return;
+                    return false;
                 case DialogResult.Yes:
                     if (SaveFile() == DialogResult.Cancel)
-                        return;
-                    break;
-                case DialogResult.No:
-                    break;
-                default:
+                        return false;
                     break;
             }
+            return true;
+        }
+
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!PromptSave())
+                return;
 
             chart = new();
             isNewFile = true;
@@ -151,6 +158,9 @@ namespace BAKKA_Sharp
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (!PromptSave())
+                return;
+
             if (openFileDialog.ShowDialog() == DialogResult.Cancel)
                 return;
 
@@ -214,23 +224,8 @@ namespace BAKKA_Sharp
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var result = chart.IsSaved
-                ? DialogResult.No
-                : MessageBox.Show("Current chart is unsaved. Do you wish to save your changes?", "Save Changes", MessageBoxButtons.YesNoCancel);
-
-            switch (result)
-            {
-                case DialogResult.Cancel:
-                    return;
-                case DialogResult.Yes:
-                    if (SaveFile() == DialogResult.Cancel)
-                        return;
-                    break;
-                case DialogResult.No:
-                    break;
-                default:
-                    break;
-            }
+            if (!PromptSave())
+                return;
 
             Application.Exit();
         }
