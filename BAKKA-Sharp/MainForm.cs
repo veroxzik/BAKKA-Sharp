@@ -2,6 +2,7 @@ using System.Drawing.Drawing2D;
 using System.Reflection;
 using IrrKlang;
 using BAKKA_Sharp.Operations;
+using Tomlyn;
 
 namespace BAKKA_Sharp
 {
@@ -11,6 +12,7 @@ namespace BAKKA_Sharp
         Chart chart = new();
         string songFilePath = "";
         bool isNewFile = true;
+        bool isRecoveredFile = false;
 
         // Operations
         OperationManager opManager = new OperationManager();
@@ -55,6 +57,10 @@ namespace BAKKA_Sharp
 
         // Program info
         string fileVersion = "";
+        UserSettings userSettings;
+        string tempFilePath = "";
+        string tempStatusPath = "";
+        string autosaveFile = "";
 
         public MainForm()
         {
@@ -104,12 +110,67 @@ namespace BAKKA_Sharp
                 fileVersion = fvi.FileVersion;
                 SetText();
             }
+
+            // Look for user settings
+            if (File.Exists("settings.toml"))
+                userSettings = Toml.ToModel<UserSettings>(File.ReadAllText("settings.toml"));
+            else
+            {
+                userSettings = new UserSettings();
+                File.WriteAllText("settings.toml", Toml.FromModel(userSettings));
+            }
+            // Apply settings
+            showCursorToolStripMenuItem.Checked = userSettings.ViewSettings.ShowCursor;
+            showCursorDuringPlaybackToolStripMenuItem.Checked = userSettings.ViewSettings.ShowCursorDuringPlayback;
+            highlightViewedNoteToolStripMenuItem.Checked = userSettings.ViewSettings.HighlightViewedNote;
+            autoSaveTimer.Interval = userSettings.SaveSettings.AutoSaveInterval * 60000;
+            autoSaveTimer.Enabled = true;
+
+            // Look for temp files from previous runs
+            var tempFile = Directory.GetFiles(Path.GetTempPath(), "*.bakka");
+            var oldAutosave = Directory.GetFiles(Path.GetTempPath(), "*.mer");
+            if (tempFile.Length > 0)
+            {
+                tempStatusPath = tempFile[0];
+                var statusLines = File.ReadAllLines(tempStatusPath);
+                if (statusLines.Length > 0)
+                {
+                    bool checkAutosave = false;
+                    bool.TryParse(statusLines[0], out checkAutosave);
+                    if (checkAutosave)
+                    {
+                        string autosaveTime = ".";
+                        if (statusLines.Length > 1)
+                            autosaveTime = " from " + statusLines[1] + ".";
+                        if (oldAutosave.Length > 0)
+                        {
+                            autosaveFile = oldAutosave[0];
+                            var result = MessageBox.Show($"Auto-save data found{autosaveTime}\n\nLoad?", "Load Auto-Save Data?", MessageBoxButtons.YesNo);
+                            if (result == DialogResult.Yes)
+                            {
+                                openFileDialog.FileName = autosaveFile;
+                                isRecoveredFile = true;
+                                OpenFile();
+                            }
+                        }
+                    }
+                    if (!isRecoveredFile)
+                    {
+                        DeleteAutosaves();
+                    }
+                }
+            }
+            else
+            {
+                tempStatusPath = Path.GetTempFileName().Replace(".tmp", ".bakka");
+                File.WriteAllText(tempStatusPath, "false");
+            }
         }
 
         private void SetText()
         {
             string save = chart.IsSaved ? "" : "*";
-            string name = isNewFile ? "New File" : saveFileDialog.FileName;
+            string name = isRecoveredFile ? "Auto-Save Recover" : (isNewFile ? "New File" : saveFileDialog.FileName);
             Text = $"{save}BAKKA Sharp {fileVersion} - [{name}]";
         }
 
@@ -149,6 +210,8 @@ namespace BAKKA_Sharp
 
             chart = new();
             isNewFile = true;
+            isRecoveredFile = false;
+            DeleteAutosaves();
             UpdateNoteLabels(-1);
             UpdateGimmickLabels(-1);
             SetText();
@@ -167,8 +230,14 @@ namespace BAKKA_Sharp
             if (openFileDialog.FileName == "")
             {
                 MessageBox.Show("No file selected.");
+                return;
             }
 
+            OpenFile();
+        }
+
+        private void OpenFile()
+        {
             chart = new();
             if (!chart.ParseFile(openFileDialog.FileName))
             {
@@ -185,8 +254,8 @@ namespace BAKKA_Sharp
                 int timeSigUpper = initTimeSig != null ? initTimeSig.TimeSig.Upper : 4;
                 int timeSigLower = initTimeSig != null ? initTimeSig.TimeSig.Lower : 4;
                 initSettingsForm.SetValues(bpm, timeSigUpper, timeSigLower, chart.Offset, chart.MovieOffset);
-                UpdateNoteLabels(0);
-                UpdateGimmickLabels(0);
+                UpdateNoteLabels(chart.Notes.Count > 0 ? 0 : -1);
+                UpdateGimmickLabels(chart.Gimmicks.Count > 0 ? 0 : -1);
                 saveFileDialog.FileName = openFileDialog.FileName;
                 chart.IsSaved = true;
                 isNewFile = false;
@@ -197,17 +266,24 @@ namespace BAKKA_Sharp
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SaveFile();
+            SaveFile(isNewFile || isRecoveredFile);
         }
 
-        private DialogResult SaveFile()
+        private DialogResult SaveFile(bool prompt = true)
         {
-            var result = !isNewFile ? DialogResult.OK : saveFileDialog.ShowDialog();
+            var result = prompt ? saveFileDialog.ShowDialog() : DialogResult.OK;
 
             if (result == DialogResult.OK)
             {
                 chart.WriteFile(saveFileDialog.FileName);
                 isNewFile = false;
+                if (isRecoveredFile)
+                {
+                    DeleteAutosaves();
+                    autosaveFile = "";
+                }
+                isRecoveredFile = false;
+                File.WriteAllText(tempStatusPath, "false");
                 SetText();
             }
             return result;
@@ -215,11 +291,7 @@ namespace BAKKA_Sharp
 
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (saveFileDialog.ShowDialog() == DialogResult.Cancel)
-                return;
-
-            chart.WriteFile(saveFileDialog.FileName);
-            SetText();
+            SaveFile(true);
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -253,6 +325,10 @@ namespace BAKKA_Sharp
                 default:
                     break;
             }
+            if (tempStatusPath != "")
+                File.Delete(tempStatusPath);
+            if (tempFilePath != "")
+                File.Delete(tempFilePath);
         }
 
         private void SetSelectedObject(NoteType type)
@@ -1823,6 +1899,30 @@ namespace BAKKA_Sharp
             SetBufferedGraphicsContext();
             circleView.Update(circlePanel.Size);
             circlePanel.Invalidate();
+        }
+
+        private void autoSaveTimer_Tick(object sender, EventArgs e)
+        {
+            if (tempFilePath == "")
+                tempFilePath = Path.GetTempFileName().Replace(".tmp", ".mer");
+            DeleteAutosaves(tempFilePath);
+
+            if (chart.Notes.Count > 0 || chart.Gimmicks.Count > 0)
+                chart.WriteFile(tempFilePath, false);
+            if (!chart.IsSaved)
+            {
+                File.WriteAllLines(tempStatusPath, new string[] { "true", DateTime.Now.ToString("yyyy-MM-dd HH:mm") });
+            }
+        }
+
+        private void DeleteAutosaves(string keep = "")
+        {
+            var oldAutosave = Directory.GetFiles(Path.GetTempPath(), "*.mer");
+            foreach (var file in oldAutosave)
+            {
+                if (file != keep)
+                    File.Delete(file);
+            }
         }
     }
 }

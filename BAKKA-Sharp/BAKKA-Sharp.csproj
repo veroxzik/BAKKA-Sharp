@@ -7,12 +7,16 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>$(VersionPrefix)1.0.0-rc1</Version>
+    <Version>$(VersionPrefix)1.0.0-rc8</Version>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0-rc1</FileVersion>
+    <FileVersion>1.0.0-rc8</FileVersion>
     <Company>VeroxZik</Company>
     <Copyright>2022</Copyright>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Tomlyn" Version="0.15.0" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="irrKlang.NET4">

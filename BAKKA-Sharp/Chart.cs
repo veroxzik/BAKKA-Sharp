@@ -30,7 +30,7 @@ namespace BAKKA_Sharp
                     Gimmicks.Count(x => x.Measure == 0 && x.GimmickType == GimmickType.TimeSignatureChange) >= 1;
             }
         }
-        public bool IsSaved { get; set; } = true;
+        public bool IsSaved { get; set; }
 
         public Chart()
         {
@@ -39,6 +39,7 @@ namespace BAKKA_Sharp
             Offset = 0;
             MovieOffset = 0;
             SongFileName = "";
+            IsSaved = true;
         }
 
         public bool ParseFile(string filename)
@@ -149,7 +150,7 @@ namespace BAKKA_Sharp
             return true;
         }
 
-        public bool WriteFile(string filename)
+        public bool WriteFile(string filename, bool setSave = true)
         {
             using (StreamWriter sw = new StreamWriter(new FileStream(filename, FileMode.Create), new UTF8Encoding(false)))
             {
@@ -196,7 +197,7 @@ namespace BAKKA_Sharp
                 }
             }
 
-            IsSaved = true;
+            IsSaved = setSave;
             return true;
         }
 

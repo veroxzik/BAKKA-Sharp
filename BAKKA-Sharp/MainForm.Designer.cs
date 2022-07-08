@@ -133,6 +133,7 @@
             this.label16 = new System.Windows.Forms.Label();
             this.noteNextButton = new System.Windows.Forms.Button();
             this.notePrevButton = new System.Windows.Forms.Button();
+            this.autoSaveTimer = new System.Windows.Forms.Timer(this.components);
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.beat2Numeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.beat1Numeric)).BeginInit();
@@ -1306,6 +1307,10 @@
             this.notePrevButton.UseVisualStyleBackColor = true;
             this.notePrevButton.Click += new System.EventHandler(this.notePrevButton_Click);
             // 
+            // autoSaveTimer
+            // 
+            this.autoSaveTimer.Tick += new System.EventHandler(this.autoSaveTimer_Tick);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -1469,5 +1474,6 @@
         private ToolStripMenuItem editToolStripMenuItem;
         private ToolStripMenuItem undoToolStripMenuItem;
         private ToolStripMenuItem redoToolStripMenuItem;
+        private System.Windows.Forms.Timer autoSaveTimer;
     }
 }
