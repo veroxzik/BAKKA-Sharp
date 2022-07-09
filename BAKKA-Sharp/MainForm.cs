@@ -1905,13 +1905,15 @@ namespace BAKKA_Sharp
         {
             if (tempFilePath == "")
                 tempFilePath = Path.GetTempFileName().Replace(".tmp", ".mer");
-            DeleteAutosaves(tempFilePath);
 
-            if (chart.Notes.Count > 0 || chart.Gimmicks.Count > 0)
-                chart.WriteFile(tempFilePath, false);
-            if (!chart.IsSaved)
+            if ((chart.Notes.Count > 0 || chart.Gimmicks.Count > 0) && !chart.IsSaved)
             {
+                chart.WriteFile(tempFilePath, false);
                 File.WriteAllLines(tempStatusPath, new string[] { "true", DateTime.Now.ToString("yyyy-MM-dd HH:mm") });
+            }
+            else
+            {
+                DeleteAutosaves(tempFilePath);
             }
         }
 
