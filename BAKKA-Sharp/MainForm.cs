@@ -55,6 +55,9 @@ namespace BAKKA_Sharp
         GimmickForm gimmickForm;
         InitChartSettingsForm initSettingsForm;
 
+        // View Forms
+        LinearViewForm linearForm;
+
         // Program info
         string fileVersion = "";
         UserSettings userSettings;
@@ -82,6 +85,10 @@ namespace BAKKA_Sharp
             // Tool Forms
             gimmickForm = new GimmickForm();
             initSettingsForm = new InitChartSettingsForm();
+
+            // View Forms
+            linearForm = new();
+            linearForm.Chart = chart;
 
             // Operation Manager
             opManager.OperationHistoryChanged += (s, e) =>
@@ -165,6 +172,9 @@ namespace BAKKA_Sharp
                 tempStatusPath = Path.GetTempFileName().Replace(".tmp", ".bakka");
                 File.WriteAllText(tempStatusPath, "false");
             }
+
+            // Always has starting gimmicks
+            UpdateGimmickLabels(0);
         }
 
         private void SetText()
@@ -213,10 +223,11 @@ namespace BAKKA_Sharp
             isRecoveredFile = false;
             DeleteAutosaves();
             UpdateNoteLabels(-1);
-            UpdateGimmickLabels(-1);
+            UpdateGimmickLabels(0);
             SetText();
             opManager.Clear();
             circlePanel.Invalidate();
+            linearForm.Chart = chart;
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -262,6 +273,7 @@ namespace BAKKA_Sharp
                 SetText();
             }
             circlePanel.Invalidate();
+            linearForm.Chart = chart;
         }
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1925,6 +1937,11 @@ namespace BAKKA_Sharp
                 if (file != keep)
                     File.Delete(file);
             }
+        }
+
+        private void linearViewToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            linearForm.Show();
         }
     }
 }

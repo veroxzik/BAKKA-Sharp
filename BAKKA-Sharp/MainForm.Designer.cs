@@ -134,6 +134,8 @@
             this.noteNextButton = new System.Windows.Forms.Button();
             this.notePrevButton = new System.Windows.Forms.Button();
             this.autoSaveTimer = new System.Windows.Forms.Timer(this.components);
+            this.linearViewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.beat2Numeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.beat1Numeric)).BeginInit();
@@ -872,7 +874,9 @@
             this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.showCursorToolStripMenuItem,
             this.showCursorDuringPlaybackToolStripMenuItem,
-            this.highlightViewedNoteToolStripMenuItem});
+            this.highlightViewedNoteToolStripMenuItem,
+            this.toolStripSeparator1,
+            this.linearViewToolStripMenuItem});
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
             this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.viewToolStripMenuItem.Text = "View";
@@ -1311,6 +1315,18 @@
             // 
             this.autoSaveTimer.Tick += new System.EventHandler(this.autoSaveTimer_Tick);
             // 
+            // linearViewToolStripMenuItem
+            // 
+            this.linearViewToolStripMenuItem.Name = "linearViewToolStripMenuItem";
+            this.linearViewToolStripMenuItem.Size = new System.Drawing.Size(230, 22);
+            this.linearViewToolStripMenuItem.Text = "Linear View";
+            this.linearViewToolStripMenuItem.Click += new System.EventHandler(this.linearViewToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(227, 6);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -1475,5 +1491,7 @@
         private ToolStripMenuItem undoToolStripMenuItem;
         private ToolStripMenuItem redoToolStripMenuItem;
         private System.Windows.Forms.Timer autoSaveTimer;
+        private ToolStripSeparator toolStripSeparator1;
+        private ToolStripMenuItem linearViewToolStripMenuItem;
     }
 }

@@ -36,6 +36,20 @@ namespace BAKKA_Sharp
         {
             Notes = new();
             Gimmicks = new();
+            Gimmicks.Add(new Gimmick()
+            {
+                BeatInfo = new BeatInfo(0),
+                GimmickType = GimmickType.BpmChange,
+                BPM = 120.0f
+            });
+            Gimmicks.Add(new Gimmick()
+            {
+                BeatInfo = new BeatInfo(0),
+                GimmickType = GimmickType.TimeSignatureChange,
+                TimeSig = new TimeSignature()
+            });
+            Gimmicks = Gimmicks.OrderBy(x => x.Measure).ToList();
+            RecalcTime();
             Offset = 0;
             MovieOffset = 0;
             SongFileName = "";
@@ -44,6 +58,8 @@ namespace BAKKA_Sharp
 
         public bool ParseFile(string filename)
         {
+            Gimmicks.Clear();
+
             var file = File.ReadAllLines(filename);
 
             int index = 0;
