@@ -535,7 +535,7 @@ namespace BAKKA_Sharp
                     // Check if there's a MaskRemove that counters the MaskAdd (unless the MaskAdd is later)
                     var rem = masks.FirstOrDefault(x => x.NoteType == NoteType.MaskRemove && x.Position == mask.Position && x.Size == mask.Size);
                     if (rem == null || rem.Measure < mask.Measure)
-                        bufGraphics.Graphics.FillPie(circleView.MaskBrush, circleView.DrawRect.ToInt(), -mask.Position * 6.0f, -mask.Size * 6.0f);
+                        bufGraphics.Graphics.FillPie(PlotBrush.MaskBrush, circleView.DrawRect.ToInt(), -mask.Position * 6.0f, -mask.Size * 6.0f);
                 }
             }
 
@@ -592,7 +592,7 @@ namespace BAKKA_Sharp
             ArcInfo endInfo = circleView.GetScaledRect(circleView.CurrentMeasure + circleView.TotalMeasureShowNotes);
 
             // Draw holds
-            // First, draw holes that start before the viewpoint and have nodes that end after
+            // First, draw holds that start before the viewpoint and have nodes that end after
             List<Note> holdNotes = chart.Notes.Where(
                 x => x.Measure < circleView.CurrentMeasure
                 && x.NextNote != null
@@ -642,7 +642,7 @@ namespace BAKKA_Sharp
                 GraphicsPath path = new GraphicsPath();
                 path.AddArc(currentInfo.Rect, startAngle, arcLength);
                 path.AddArc(endInfo.Rect, startAngle2 + arcLength2, -arcLength2);
-                bufGraphics.Graphics.FillPath(circleView.HoldBrush, path);
+                bufGraphics.Graphics.FillPath(PlotBrush.HoldBrush, path);
             }
             // Second, draw all the notes on-screen
             holdNotes = chart.Notes.Where(
@@ -676,7 +676,7 @@ namespace BAKKA_Sharp
                     GraphicsPath path = new GraphicsPath();
                     path.AddArc(info.Rect, info.StartAngle, info.ArcLength);
                     path.AddArc(currentInfo.Rect, startAngle + arcLength, -arcLength);
-                    bufGraphics.Graphics.FillPath(circleView.HoldBrush, path);
+                    bufGraphics.Graphics.FillPath(PlotBrush.HoldBrush, path);
                 }
 
                 // If the next note is on-screen, this case handles that
@@ -686,7 +686,7 @@ namespace BAKKA_Sharp
                     GraphicsPath path = new GraphicsPath();
                     path.AddArc(info.Rect, info.StartAngle, info.ArcLength);
                     path.AddArc(nextInfo.Rect, nextInfo.StartAngle + nextInfo.ArcLength, -nextInfo.ArcLength);
-                    bufGraphics.Graphics.FillPath(circleView.HoldBrush, path);
+                    bufGraphics.Graphics.FillPath(PlotBrush.HoldBrush, path);
                 }
 
                 // If the next note is off-screen, this case handles that
@@ -712,7 +712,7 @@ namespace BAKKA_Sharp
                     GraphicsPath path = new GraphicsPath();
                     path.AddArc(endInfo.Rect, startAngle, arcLength);
                     path.AddArc(info.Rect, info.StartAngle + info.ArcLength, -info.ArcLength);
-                    bufGraphics.Graphics.FillPath(circleView.HoldBrush, path);
+                    bufGraphics.Graphics.FillPath(PlotBrush.HoldBrush, path);
                 }
 
                 // Draw note

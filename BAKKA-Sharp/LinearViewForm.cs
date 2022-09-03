@@ -51,6 +51,9 @@ namespace BAKKA_Sharp
 
         private void SetBufferedGraphicsContext()
         {
+            if (linearPanel.Width == 0 || linearPanel.Height == 0)
+                return;
+
             gfxContext.MaximumBuffer = new Size(linearPanel.Width + 1, linearPanel.Height + 1);
             bufGraphics = gfxContext.Allocate(linearPanel.CreateGraphics(),
                 new Rectangle(0, 0, linearPanel.Width, linearPanel.Height));
@@ -59,13 +62,52 @@ namespace BAKKA_Sharp
         private void linearPanel_Paint(object sender, PaintEventArgs e)
         {
             Rectangle panelRect = new Rectangle(0, 0, linearPanel.Width, linearPanel.Height);
-            float endMeasure = (float)Math.Ceiling(linearView.StartingMeasure + linearPanel.Height / (linearView.QuarterNoteHeight * 4));
 
             // Set drawing mode
             bufGraphics.Graphics.SmoothingMode = SmoothingMode.HighSpeed;
 
             // Draw background
-            bufGraphics.Graphics.FillRectangle(new SolidBrush(Color.Black), panelRect);
+            bufGraphics.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), panelRect);
+
+            // Ref Points
+            float startingRemainder = (float)Math.Ceiling(linearView.StartingMeasure) - linearView.StartingMeasure;
+            float startingPoint = startingRemainder * linearView.QuarterNoteHeight * 4;
+
+            // Draw Masks
+            var masks = Chart.Notes.Where(x => x.IsMask && x.NoteType == NoteType.MaskAdd && x.Measure < linearView.EndMeasure);
+            foreach (var mask in masks)
+            {
+                float measureOffset = mask.Measure - (float)Math.Ceiling(linearView.StartingMeasure);
+                float maskPoint = measureOffset * linearView.QuarterNoteHeight * 4;
+                float endPoint = 0;
+
+                var addNote = new NoteInfo(mask.Position, mask.Size);
+
+                var removeNote = Chart.Notes.FirstOrDefault(x => x.NoteType == NoteType.MaskRemove && x.Measure > mask.Measure && x.Position == mask.Position && x.Size == mask.Size);
+                if (removeNote != null)
+                {
+                    endPoint = linearView.PanelSize.Height - startingPoint - (removeNote.Measure - (float)Math.Ceiling(linearView.StartingMeasure)) * linearView.QuarterNoteHeight * 4;
+                    if (endPoint < 0)
+                        endPoint = 0;
+                }
+
+                bufGraphics.Graphics.FillRectangle(
+                    new SolidBrush(mask.Color),
+                    linearView.LeftMargin + linearView.LaneWidth * addNote.StartLane + 1.0f,
+                    endPoint,
+                    linearView.LaneWidth * addNote.Size - 1.0f,
+                    linearView.PanelSize.Height - startingPoint - maskPoint);
+
+                if (addNote.StartLane2 != null && addNote.Size2 != null)
+                {
+                    bufGraphics.Graphics.FillRectangle(
+                    new SolidBrush(mask.Color),
+                    linearView.LeftMargin + linearView.LaneWidth * (int)addNote.StartLane2 + 1.0f,
+                    endPoint,
+                    linearView.LaneWidth * (int)addNote.Size2 - 1.0f,
+                    linearView.PanelSize.Height - startingPoint - maskPoint);
+                }
+            }
 
             // Draw Lanes
             for (int i = 0; i < (linearView.NumLanes + 1); i++)
@@ -87,9 +129,7 @@ namespace BAKKA_Sharp
             }
 
             // Draw Measure Lines
-            float startingRemainder = (float)Math.Ceiling(linearView.StartingMeasure) - linearView.StartingMeasure;
-            float startingPoint = startingRemainder * linearView.QuarterNoteHeight * 4;
-            for (int i = 0; i <= (int)(endMeasure - linearView.StartingMeasure); i++)
+            for (int i = 0; i <= (int)(linearView.EndMeasure - linearView.StartingMeasure); i++)
             {
                 bufGraphics.Graphics.DrawLine(
                     linearView.MajorLanePen,
@@ -108,7 +148,10 @@ namespace BAKKA_Sharp
             }
 
             // Draw Hi-Speed
-            var hispeed = Chart.Gimmicks.Where(x => x.GimmickType == GimmickType.HiSpeedChange && x.Measure >= linearView.StartingMeasure && x.Measure <= endMeasure);
+            var hispeed = Chart.Gimmicks.Where(
+                x => x.GimmickType == GimmickType.HiSpeedChange 
+                && x.Measure >= linearView.StartingMeasure 
+                && x.Measure <= linearView.EndMeasure);
             foreach (var evt in hispeed)
             {
                 float measureOffset = evt.Measure - (float)Math.Ceiling(linearView.StartingMeasure);
@@ -130,7 +173,10 @@ namespace BAKKA_Sharp
             }
 
             // Draw Time Signature
-            var timesig = Chart.Gimmicks.Where(x => x.GimmickType == GimmickType.TimeSignatureChange && x.Measure >= linearView.StartingMeasure && x.Measure <= endMeasure);
+            var timesig = Chart.Gimmicks.Where(
+                x => x.GimmickType == GimmickType.TimeSignatureChange 
+                && x.Measure >= linearView.StartingMeasure 
+                && x.Measure <= linearView.EndMeasure);
             foreach (var evt in timesig)
             {
                 float measureOffset = evt.Measure - (float)Math.Ceiling(linearView.StartingMeasure);
@@ -152,7 +198,10 @@ namespace BAKKA_Sharp
             }
 
             // Draw BPM
-            var bpm = Chart.Gimmicks.Where(x => x.GimmickType == GimmickType.BpmChange && x.Measure >= linearView.StartingMeasure && x.Measure <= endMeasure);
+            var bpm = Chart.Gimmicks.Where(
+                x => x.GimmickType == GimmickType.BpmChange 
+                && x.Measure >= linearView.StartingMeasure 
+                && x.Measure <= linearView.EndMeasure);
             foreach (var evt in bpm)
             {
                 float measureOffset = evt.Measure - (float)Math.Ceiling(linearView.StartingMeasure);
@@ -184,64 +233,28 @@ namespace BAKKA_Sharp
                 linearView.LeftMargin + linearView.AllLaneWidth,
                 linearView.PanelSize.Height - startingPoint - selectionPoint);
 
+            // Draw Holds
+            // First, draw holds that start before the viewpoint and end after
+
+            // Second, draw all notes on-screen
+            var holdNotes = Chart.Notes.Where(
+                x => x.Measure >= linearView.StartingMeasure
+                && x.Measure <= linearView.EndMeasure
+                && x.IsHold).ToList();
+            foreach (var note in holdNotes)
+            {
+                linearView.DrawNote(bufGraphics.Graphics, note, startingPoint);
+            }
+
             // Draw Notes
             var drawNotes = Chart.Notes.Where(
                 x => x.Measure >= linearView.StartingMeasure
-                && x.Measure <= endMeasure
+                && x.Measure <= linearView.EndMeasure
                 && !x.IsHold
                 && !x.IsMask).ToList();
             foreach (var note in drawNotes)
             {
-                float measureOffset = note.Measure - (float)Math.Ceiling(linearView.StartingMeasure);
-                float notePoint = (float)Math.Ceiling(measureOffset * linearView.QuarterNoteHeight * 4);
-
-                int endLane = (44 - note.Position) < 0 ? (44 - note.Position) + 60 : (44 - note.Position);
-                int size = note.Size;
-                int startLane = (endLane - size + 1);
-                int? startLane2 = null;
-                int? size2 = null;
-                if (startLane < 0)
-                {
-                    startLane2 = startLane + 60;
-                    startLane = 0;
-                    size = endLane + 1;
-                    size2 = 60 - startLane2;
-                }
-
-                bufGraphics.Graphics.FillRectangle(
-                    new SolidBrush(note.Color),
-                    linearView.LeftMargin + linearView.LaneWidth * startLane + 1.0f,
-                    linearView.PanelSize.Height - startingPoint - notePoint - 3.0f,
-                    linearView.LaneWidth * size - 2.0f,
-                    6.0f);
-
-                if (startLane2 != null && size2 != null)
-                { 
-                    bufGraphics.Graphics.FillPolygon(
-                        new SolidBrush(note.Color),
-                        new PointF[] {
-                            new PointF(linearView.LeftMargin - 8.0f, linearView.PanelSize.Height - startingPoint - notePoint + 1.0f),
-                            new PointF(linearView.LeftMargin - 8.0f, linearView.PanelSize.Height - startingPoint - notePoint - 2.0f),
-                            new PointF(linearView.LeftMargin + 1.0f, linearView.PanelSize.Height - startingPoint - notePoint - 4.0f),
-                            new PointF(linearView.LeftMargin + 1.0f, linearView.PanelSize.Height - startingPoint - notePoint + 3.0f)
-                        });
-
-                    bufGraphics.Graphics.FillRectangle(
-                        new SolidBrush(note.Color),
-                        linearView.LeftMargin + linearView.LaneWidth * (int)startLane2 + 1.0f,
-                        linearView.PanelSize.Height - startingPoint - notePoint - 3.0f,
-                        linearView.LaneWidth * (int)size2 - 2.0f,
-                        6.0f);
-
-                    bufGraphics.Graphics.FillPolygon(
-                        new SolidBrush(note.Color),
-                        new PointF[] {
-                            new PointF(linearView.LeftMargin + linearView.AllLaneWidth + 8.0f, linearView.PanelSize.Height - startingPoint - notePoint + 1.0f),
-                            new PointF(linearView.LeftMargin + linearView.AllLaneWidth + 8.0f, linearView.PanelSize.Height - startingPoint - notePoint - 2.0f),
-                            new PointF(linearView.LeftMargin + linearView.AllLaneWidth - 1.0f, linearView.PanelSize.Height - startingPoint - notePoint - 4.0f),
-                            new PointF(linearView.LeftMargin + linearView.AllLaneWidth - 1.0f, linearView.PanelSize.Height - startingPoint - notePoint + 3.0f)
-                        });
-                }
+                linearView.DrawNote(bufGraphics.Graphics, note, startingPoint);
             }
 
             bufGraphics.Render(e.Graphics);
@@ -286,15 +299,20 @@ namespace BAKKA_Sharp
             {
                 if (e.Delta > 0)
                 {
-                    linearView.StartingMeasure += 0.25f * (linearView.QuarterNoteHeight / 50.0f);
+                    linearView.StartingMeasure += 0.25f * (50.0f / linearView.QuarterNoteHeight);
                 }
                 else
                 {
                     if (linearView.StartingMeasure > -0.25f)
-                        linearView.StartingMeasure = Math.Max(-0.25f, linearView.StartingMeasure - 0.25f * (linearView.QuarterNoteHeight / 50.0f));
+                        linearView.StartingMeasure = Math.Max(-0.25f, linearView.StartingMeasure - 0.25f * ( 50.0f / linearView.QuarterNoteHeight));
                 }
             }
             linearPanel.Invalidate();
+        }
+
+        private void linearPanel_MouseMove(object sender, MouseEventArgs e)
+        {
+            // Check all notes to determine if we are over one
         }
     }
 }

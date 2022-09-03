@@ -53,6 +53,8 @@ namespace BAKKA_Sharp
                 case NoteType.Chain:
                 case NoteType.ChainBonusFlair:
                     return Color.FromArgb(204, 190, 45);
+                case NoteType.MaskAdd:
+                    return Color.DimGray;
                 default:
                     return Color.Transparent;
             }

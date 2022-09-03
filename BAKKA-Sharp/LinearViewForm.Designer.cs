@@ -40,6 +40,7 @@
             this.linearPanel.TabIndex = 0;
             this.linearPanel.Click += new System.EventHandler(this.linearPanel_Click);
             this.linearPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.linearPanel_Paint);
+            this.linearPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.linearPanel_MouseMove);
             // 
             // LinearViewForm
             // 

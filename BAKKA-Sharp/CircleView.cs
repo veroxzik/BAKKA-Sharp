@@ -25,8 +25,6 @@ namespace BAKKA_Sharp
         public Pen TickMinorPen { get; set; }
         public Pen TickMediumPen { get; set; }
         public Pen TickMajorPen { get; set; }
-        public SolidBrush HoldBrush { get; set; } = new SolidBrush(Color.FromArgb(170, Color.Yellow));
-        public SolidBrush MaskBrush { get; set; } = new SolidBrush(Color.DimGray);
         public Pen HighlightPen { get; set; }
         public Pen FlairPen { get; set; }
         private int CursorTransparency = 110;
