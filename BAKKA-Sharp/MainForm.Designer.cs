@@ -73,6 +73,8 @@
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.currentSelectionLabel = new System.Windows.Forms.Label();
             this.playbackGroupBox = new System.Windows.Forms.GroupBox();
+            this.trackBarVolume = new System.Windows.Forms.TrackBar();
+            this.labelVolume = new System.Windows.Forms.Label();
             this.songFileLabel = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
             this.songTrackBar = new System.Windows.Forms.TrackBar();
@@ -147,6 +149,7 @@
             this.groupBox4.SuspendLayout();
             this.groupBox5.SuspendLayout();
             this.playbackGroupBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarVolume)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.songTrackBar)).BeginInit();
             this.groupBox9.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.visualHispeedNumeric)).BeginInit();
@@ -682,6 +685,8 @@
             // 
             this.playbackGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.playbackGroupBox.Controls.Add(this.trackBarVolume);
+            this.playbackGroupBox.Controls.Add(this.labelVolume);
             this.playbackGroupBox.Controls.Add(this.songFileLabel);
             this.playbackGroupBox.Controls.Add(this.label20);
             this.playbackGroupBox.Controls.Add(this.songTrackBar);
@@ -693,6 +698,29 @@
             this.playbackGroupBox.TabIndex = 32;
             this.playbackGroupBox.TabStop = false;
             this.playbackGroupBox.Text = "Playback";
+            // 
+            // trackBarVolume
+            // 
+            this.trackBarVolume.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.trackBarVolume.Location = new System.Drawing.Point(685, 37);
+            this.trackBarVolume.Maximum = 100;
+            this.trackBarVolume.Name = "trackBarVolume";
+            this.trackBarVolume.Orientation = System.Windows.Forms.Orientation.Vertical;
+            this.trackBarVolume.Size = new System.Drawing.Size(45, 75);
+            this.trackBarVolume.TabIndex = 34;
+            this.trackBarVolume.TickFrequency = 50;
+            this.trackBarVolume.Value = 50;
+            this.trackBarVolume.ValueChanged += new System.EventHandler(this.trackBarVolume_ValueChanged);
+            // 
+            // labelVolume
+            // 
+            this.labelVolume.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelVolume.AutoSize = true;
+            this.labelVolume.Location = new System.Drawing.Point(673, 19);
+            this.labelVolume.Name = "labelVolume";
+            this.labelVolume.Size = new System.Drawing.Size(47, 15);
+            this.labelVolume.TabIndex = 0;
+            this.labelVolume.Text = "Volume";
             // 
             // songFileLabel
             // 
@@ -719,7 +747,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.songTrackBar.Location = new System.Drawing.Point(98, 22);
             this.songTrackBar.Name = "songTrackBar";
-            this.songTrackBar.Size = new System.Drawing.Size(632, 45);
+            this.songTrackBar.Size = new System.Drawing.Size(569, 45);
             this.songTrackBar.TabIndex = 2;
             this.songTrackBar.ValueChanged += new System.EventHandler(this.songTrackBar_ValueChanged);
             // 
@@ -1354,6 +1382,7 @@
             this.groupBox5.PerformLayout();
             this.playbackGroupBox.ResumeLayout(false);
             this.playbackGroupBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarVolume)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.songTrackBar)).EndInit();
             this.groupBox9.ResumeLayout(false);
             this.groupBox9.PerformLayout();
@@ -1475,5 +1504,7 @@
         private ToolStripMenuItem undoToolStripMenuItem;
         private ToolStripMenuItem redoToolStripMenuItem;
         private System.Windows.Forms.Timer autoSaveTimer;
+        private Label labelVolume;
+        private TrackBar trackBarVolume;
     }
 }

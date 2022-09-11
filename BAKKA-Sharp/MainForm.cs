@@ -1097,6 +1097,9 @@ namespace BAKKA_Sharp
                 songFilePath = openSongDialog.FileName;
                 songFileLabel.Text = songFilePath;
                 currentSong = soundEngine.Play2D(songFilePath, true, true);
+                /* Volume is represented as a float from 0-1. */
+                currentSong.Volume = (float)trackBarVolume.Value / (float)trackBarVolume.Maximum;
+
                 songTrackBar.Value = 0;
                 songTrackBar.Maximum = (int)currentSong.PlayLength;
             }
@@ -1925,6 +1928,18 @@ namespace BAKKA_Sharp
                 if (file != keep)
                     File.Delete(file);
             }
+        }
+
+        private void trackBarVolume_ValueChanged(object sender, EventArgs e)
+        {
+            /* No song, nothing to do. */
+            if (currentSong == null)
+            {
+                return;
+            }
+            /* Volume is represented as a float from 0-1. */
+            currentSong.Volume = (float)trackBarVolume.Value / (float)trackBarVolume.Maximum;
+            circlePanel.Invalidate();
         }
     }
 }
