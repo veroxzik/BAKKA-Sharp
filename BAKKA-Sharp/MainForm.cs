@@ -1821,6 +1821,29 @@ namespace BAKKA_Sharp
             }
         }
 
+        private void playbackVolumeChange(bool increase)
+        {
+            int val = trackBarVolume.LargeChange;
+            /* Bounds check. */
+            if (increase && (trackBarVolume.Value + val > trackBarVolume.Maximum))
+            {
+                val = trackBarVolume.Maximum - trackBarVolume.Value;
+            }
+            else if (!increase && (trackBarVolume.Value - val < trackBarVolume.Minimum))
+            {
+                val = trackBarVolume.Value - trackBarVolume.Minimum;
+            }
+            if (!increase)
+            {
+                val *= -1;
+            }
+            /*
+             * Updating the trackbar volume will call the trackBarVolume_Changed
+             * callback, which will update the current song volume.
+             */
+            trackBarVolume.Value += val;
+            trackBarVolume.Focus();
+        }
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             var sender = this;
@@ -1863,6 +1886,12 @@ namespace BAKKA_Sharp
                 case Keys.P:
                     playButton_Click(sender, e);
                     playButton.Focus();
+                    return true;
+                case Keys.Up | Keys.Shift:
+                    /* Fallthrough */
+                case Keys.Down | Keys.Shift:
+                    keyData &= ~Keys.Shift;
+                    playbackVolumeChange(keyData == Keys.Up);
                     return true;
                 default:
                     break;
