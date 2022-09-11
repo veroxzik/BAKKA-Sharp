@@ -749,6 +749,7 @@
             this.songTrackBar.Name = "songTrackBar";
             this.songTrackBar.Size = new System.Drawing.Size(569, 45);
             this.songTrackBar.TabIndex = 2;
+            this.songTrackBar.TickStyle = System.Windows.Forms.TickStyle.None;
             this.songTrackBar.ValueChanged += new System.EventHandler(this.songTrackBar_ValueChanged);
             // 
             // selectSongButton
